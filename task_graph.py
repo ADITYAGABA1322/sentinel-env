@@ -1,0 +1,154 @@
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+from typing import Optional
+
+from scenarios import Scenario, SubTask
+
+
+# ---------------------------------------------------------------------------
+# Node state
+# ---------------------------------------------------------------------------
+
+@dataclass
+class TaskNode:
+    subtask: SubTask
+    status: str = "pending"      # pending | ready | in_progress | completed | failed | skipped
+    outcome: float = 0.0         # 1.0 correct | 0.5 partial | 0.0 wrong
+    specialist_used: str = ""
+    attempts: int = 0
+    was_adversarial: bool = False
+
+
+# ---------------------------------------------------------------------------
+# TaskGraph
+# Manages the DAG of subtasks for one episode.
+# Tracks dependencies, determines which nodes are "ready" to execute,
+# and records outcomes.
+# ---------------------------------------------------------------------------
+
+class TaskGraph:
+    def __init__(self, scenario: Scenario) -> None:
+        self._scenario   = scenario
+        self._nodes: dict[str, TaskNode] = {}
+        self._order: list[str] = []   # insertion order (for iteration)
+        self._build(scenario["subtasks"])
+
+    def _build(self, subtasks: list[SubTask]) -> None:
+        for st in subtasks:
+            self._nodes[st["id"]] = TaskNode(subtask=st)
+            self._order.append(st["id"])
+
+    # ------------------------------------------------------------------
+    # State queries
+    # ------------------------------------------------------------------
+
+    def current_node(self) -> Optional[TaskNode]:
+        """
+        Returns the first 'ready' node (all dependencies completed).
+        Returns None if all nodes are done or none are unblocked yet.
+        """
+        for sid in self._order:
+            node = self._nodes[sid]
+            if node.status == "pending" and self._deps_met(sid):
+                node.status = "ready"
+            if node.status == "ready":
+                return node
+        return None
+
+    def _deps_met(self, subtask_id: str) -> bool:
+        """All dependencies of this node must be 'completed'."""
+        deps = self._nodes[subtask_id].subtask["depends_on"]
+        return all(
+            self._nodes[dep].status == "completed"
+            for dep in deps
+            if dep in self._nodes
+        )
+
+    def is_done(self) -> bool:
+        return all(
+            n.status in ("completed", "failed", "skipped")
+            for n in self._nodes.values()
+        )
+
+    def completion_rate(self) -> float:
+        completed = sum(1 for n in self._nodes.values() if n.status == "completed")
+        return completed / len(self._nodes) if self._nodes else 0.0
+
+    def adversarial_detections(self) -> int:
+        """
+        Count of high-stakes adversarial attempts that were avoided.
+        Avoided = node was adversarial AND orchestrator chose VERIFY or SOLVE_INDEPENDENTLY.
+        """
+        return sum(
+            1 for n in self._nodes.values()
+            if n.was_adversarial and n.status == "completed" and n.outcome > 0.0
+        )
+
+    def adversarial_poisonings(self) -> int:
+        """
+        Count of adversarial results that slipped through unchecked.
+        """
+        return sum(
+            1 for n in self._nodes.values()
+            if n.was_adversarial and n.outcome == 0.0
+        )
+
+    def subtasks_remaining(self) -> int:
+        return sum(
+            1 for n in self._nodes.values()
+            if n.status in ("pending", "ready", "in_progress")
+        )
+
+    def subtasks_completed(self) -> int:
+        return sum(1 for n in self._nodes.values() if n.status == "completed")
+
+    def subtasks_total(self) -> int:
+        return len(self._nodes)
+
+    def high_stakes_nodes(self) -> list[TaskNode]:
+        return [n for n in self._nodes.values() if n.subtask["stakes"] >= 0.70]
+
+    # ------------------------------------------------------------------
+    # Mutations
+    # ------------------------------------------------------------------
+
+    def record_outcome(
+        self,
+        subtask_id: str,
+        outcome: float,
+        specialist_id: str,
+        was_adversarial: bool = False,
+    ) -> None:
+        if subtask_id not in self._nodes:
+            raise KeyError(f"Unknown subtask_id: {subtask_id}")
+        node = self._nodes[subtask_id]
+        node.outcome         = outcome
+        node.specialist_used = specialist_id
+        node.attempts        += 1
+        node.was_adversarial  = was_adversarial
+        node.status = "completed" if outcome > 0.0 else "failed"
+
+    def skip_node(self, subtask_id: str) -> None:
+        if subtask_id in self._nodes:
+            self._nodes[subtask_id].status = "skipped"
+
+    # ------------------------------------------------------------------
+    # Summary (for info dict in StepResult)
+    # ------------------------------------------------------------------
+
+    def summary(self) -> dict:
+        return {
+            "scenario_id":          self._scenario["scenario_id"],
+            "task_type":            self._scenario["task_type"],
+            "subtasks_total":       self.subtasks_total(),
+            "subtasks_completed":   self.subtasks_completed(),
+            "subtasks_remaining":   self.subtasks_remaining(),
+            "completion_rate":      round(self.completion_rate(), 3),
+            "adversarial_detections": self.adversarial_detections(),
+            "adversarial_poisonings": self.adversarial_poisonings(),
+            "is_done":              self.is_done(),
+        }
+
+    def node_statuses(self) -> dict[str, str]:
+        return {sid: n.status for sid, n in self._nodes.items()}
