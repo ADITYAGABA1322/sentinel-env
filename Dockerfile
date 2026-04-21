@@ -1,0 +1,32 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install dependencies first (cached layer)
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy all source files
+COPY app.py .
+COPY environment.py .
+COPY models.py .
+COPY graders.py .
+COPY specialists.py .
+COPY trust_ledger.py .
+COPY task_graph.py .
+COPY scenarios.py .
+COPY openenv.yaml .
+COPY inference.py .
+
+# Create outputs directory for baseline scores
+RUN mkdir -p outputs
+
+# Expose port
+EXPOSE 7860
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:7860/health')" || exit 1
+
+# Start server
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "7860", "--workers", "1"]
