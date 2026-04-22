@@ -27,6 +27,7 @@ app = FastAPI(
 # One env instance per session_id
 _sessions: dict[str, SentinelEnv] = {}
 _STATIC_DIR = Path(__file__).resolve().parent / "static"
+_OUTPUTS_DIR = Path(__file__).resolve().parent / "outputs"
 
 def _get_env(session_id: str) -> SentinelEnv:
     if session_id not in _sessions:
@@ -77,6 +78,14 @@ def root():
             "routes": ["/health", "/metadata", "/tasks", "/schema", "/grader", "/reset", "/step", "/state"],
         }
     )
+
+
+@app.get("/assets/baseline_comparison.png")
+def baseline_comparison_chart():
+    chart_path = _OUTPUTS_DIR / "baseline_comparison.png"
+    if not chart_path.exists():
+        raise HTTPException(status_code=404, detail="Baseline comparison chart not found.")
+    return FileResponse(chart_path, media_type="image/png")
 
 
 @app.get("/api")

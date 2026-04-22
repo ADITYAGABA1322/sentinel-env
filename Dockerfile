@@ -22,6 +22,7 @@ COPY README.md .
 COPY pyproject.toml .
 COPY server ./server
 COPY static ./static
+COPY outputs ./outputs
 
 # Create outputs directory for baseline scores
 RUN mkdir -p outputs
