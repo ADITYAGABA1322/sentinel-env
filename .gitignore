@@ -5,7 +5,10 @@ __pycache__/
 .mypy_cache/
 .ruff_cache/
 .venv/
-outputs/
+outputs/*
+!outputs/baseline_comparison.png
+!outputs/baseline_scores.json
+!outputs/evaluation_results.json
 .env
 .env.*
 !.env.example

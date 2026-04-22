@@ -24,6 +24,12 @@ SENTINEL turns that failure mode into a trainable environment. The model only se
 - Rewards: per-step reward plus terminal score, normalized to `0.0-1.0`
 - Dataset: 120 abstract multi-agent scenarios
 
+## Live Submission Targets
+
+- GitHub: `https://github.com/ADITYAGABA1322/sentinel-env`
+- Hugging Face Space: `https://xcodeaddy-sentinel-env.hf.space`
+- OpenEnv base URL: `https://xcodeaddy-sentinel-env.hf.space`
+
 ## Specialist Behaviors
 
 | Public Slot | Hidden Behavior |
@@ -133,10 +139,11 @@ pip install pytest
 Run checks:
 
 ```bash
-python -m py_compile app.py environment.py models.py graders.py specialists.py trust_ledger.py task_graph.py scenarios.py inference.py
+python -m py_compile app.py server/app.py environment.py models.py graders.py specialists.py trust_ledger.py task_graph.py scenarios.py inference.py comms_bus.py training/evaluate.py training/train.py
 python -m pytest -q
 python inference.py
-python training/evaluate.py --episodes 20 --task task3
+python training/evaluate.py --episodes 20 --task all --plot outputs/baseline_comparison.png
+python training/train.py --dry-run --episodes 5
 ```
 
 Run the server:
@@ -175,7 +182,47 @@ docker run -p 7860:7860 sentinel-env
 - `heuristic`
 - `oracle_lite`
 
-The evaluator writes `outputs/evaluation_results.json` for demo charts.
+The evaluator writes `outputs/evaluation_results.json` and `outputs/baseline_comparison.png`.
+
+![Baseline Comparison](outputs/baseline_comparison.png)
+
+Latest local comparison, 20 episodes per task and policy:
+
+| Policy | Overall | Task 1 | Task 2 | Task 3 |
+| --- | ---: | ---: | ---: | ---: |
+| Random | 0.7144 | 0.7948 | 0.6493 | 0.6990 |
+| Heuristic trust-weighted | 0.8162 | 0.8911 | 0.7736 | 0.7838 |
+| Oracle-lite upper bound | 0.8718 | 0.9445 | 0.7760 | 0.8950 |
+
+The demo story is the score gap: the reward function distinguishes blind delegation from trust-aware routing, and the oracle-lite upper bound shows room for onsite RL training.
+
+## Hugging Face Deployment
+
+```bash
+huggingface-cli login
+huggingface-cli repo create sentinel-env --type space --space-sdk docker --private false
+git remote add hf https://huggingface.co/spaces/XcodeAddy/sentinel-env
+git push hf main
+```
+
+After the Space builds:
+
+```bash
+curl https://xcodeaddy-sentinel-env.hf.space/health
+curl https://xcodeaddy-sentinel-env.hf.space/
+curl -X POST https://xcodeaddy-sentinel-env.hf.space/reset \
+  -H "Content-Type: application/json" \
+  -d '{"task_type":"task3","seed":42}'
+openenv validate . --json
+```
+
+## Mini-Blog Draft
+
+Title: `SENTINEL: Training AI to Trust Wisely in Multi-Agent Systems`
+
+SENTINEL is an OpenEnv RL environment for one failure mode: multi-agent systems delegate blindly. One orchestrator must complete long tasks by routing work across five specialist agents whose reliability profiles are hidden and reshuffled every episode. The orchestrator only sees behavior, confidence, stakes, and history, so it must learn skepticism, verification, recovery, and calibrated trust.
+
+The specialists are deterministic FSMs on purpose: they give stable reward signals while the orchestrator remains the trainable target. Random routing scores `0.7144`, trust-weighted routing scores `0.8162`, and oracle-lite reaches `0.8718`, showing the environment has a meaningful learning signal before onsite GRPO training.
 
 ## Hackathon Alignment
 
