@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Optional
 
 from scenarios import Scenario, SubTask
@@ -18,6 +18,8 @@ class TaskNode:
     specialist_used: str = ""
     attempts: int = 0
     was_adversarial: bool = False
+    adversarial_detection_count: int = 0
+    adversarial_poisoning_count: int = 0
 
 
 # ---------------------------------------------------------------------------
@@ -28,6 +30,8 @@ class TaskNode:
 # ---------------------------------------------------------------------------
 
 class TaskGraph:
+    MAX_ATTEMPTS_PER_NODE = 2
+
     def __init__(self, scenario: Scenario) -> None:
         self._scenario   = scenario
         self._nodes: dict[str, TaskNode] = {}
@@ -50,6 +54,8 @@ class TaskGraph:
         """
         for sid in self._order:
             node = self._nodes[sid]
+            if node.status == "failed" and node.attempts < self.MAX_ATTEMPTS_PER_NODE:
+                node.status = "ready"
             if node.status == "pending" and self._deps_met(sid):
                 node.status = "ready"
             if node.status == "ready":
@@ -57,17 +63,24 @@ class TaskGraph:
         return None
 
     def _deps_met(self, subtask_id: str) -> bool:
-        """All dependencies of this node must be 'completed'."""
+        """All dependencies must be resolved before downstream work starts."""
         deps = self._nodes[subtask_id].subtask["depends_on"]
         return all(
-            self._nodes[dep].status == "completed"
+            self._is_dependency_resolved(dep)
             for dep in deps
             if dep in self._nodes
         )
 
+    def _is_dependency_resolved(self, subtask_id: str) -> bool:
+        node = self._nodes[subtask_id]
+        if node.status in ("completed", "skipped"):
+            return True
+        return node.status == "failed" and node.attempts >= self.MAX_ATTEMPTS_PER_NODE
+
     def is_done(self) -> bool:
         return all(
-            n.status in ("completed", "failed", "skipped")
+            n.status in ("completed", "skipped")
+            or (n.status == "failed" and n.attempts >= self.MAX_ATTEMPTS_PER_NODE)
             for n in self._nodes.values()
         )
 
@@ -81,8 +94,7 @@ class TaskGraph:
         Avoided = node was adversarial AND orchestrator chose VERIFY or SOLVE_INDEPENDENTLY.
         """
         return sum(
-            1 for n in self._nodes.values()
-            if n.was_adversarial and n.status == "completed" and n.outcome > 0.0
+            n.adversarial_detection_count for n in self._nodes.values()
         )
 
     def adversarial_poisonings(self) -> int:
@@ -90,14 +102,14 @@ class TaskGraph:
         Count of adversarial results that slipped through unchecked.
         """
         return sum(
-            1 for n in self._nodes.values()
-            if n.was_adversarial and n.outcome == 0.0
+            n.adversarial_poisoning_count for n in self._nodes.values()
         )
 
     def subtasks_remaining(self) -> int:
         return sum(
             1 for n in self._nodes.values()
             if n.status in ("pending", "ready", "in_progress")
+            or (n.status == "failed" and n.attempts < self.MAX_ATTEMPTS_PER_NODE)
         )
 
     def subtasks_completed(self) -> int:
@@ -105,6 +117,12 @@ class TaskGraph:
 
     def subtasks_total(self) -> int:
         return len(self._nodes)
+
+    def subtasks_failed(self) -> int:
+        return sum(1 for n in self._nodes.values() if n.status == "failed")
+
+    def node_index(self, subtask_id: str) -> int:
+        return self._order.index(subtask_id)
 
     def high_stakes_nodes(self) -> list[TaskNode]:
         return [n for n in self._nodes.values() if n.subtask["stakes"] >= 0.70]
@@ -126,7 +144,11 @@ class TaskGraph:
         node.outcome         = outcome
         node.specialist_used = specialist_id
         node.attempts        += 1
-        node.was_adversarial  = was_adversarial
+        node.was_adversarial  = node.was_adversarial or was_adversarial
+        if was_adversarial and outcome > 0.0:
+            node.adversarial_detection_count += 1
+        elif was_adversarial:
+            node.adversarial_poisoning_count += 1
         node.status = "completed" if outcome > 0.0 else "failed"
 
     def skip_node(self, subtask_id: str) -> None:
@@ -143,6 +165,7 @@ class TaskGraph:
             "task_type":            self._scenario["task_type"],
             "subtasks_total":       self.subtasks_total(),
             "subtasks_completed":   self.subtasks_completed(),
+            "subtasks_failed":      self.subtasks_failed(),
             "subtasks_remaining":   self.subtasks_remaining(),
             "completion_rate":      round(self.completion_rate(), 3),
             "adversarial_detections": self.adversarial_detections(),

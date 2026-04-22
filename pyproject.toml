@@ -1,0 +1,30 @@
+[project]
+name = "sentinel-env"
+version = "1.0.0"
+description = "OpenEnv-compatible multi-agent trust calibration environment."
+requires-python = ">=3.10,<3.14"
+dependencies = [
+  "fastapi>=0.115,<1",
+  "uvicorn[standard]>=0.35,<1",
+  "pydantic>=2.7,<3",
+  "httpx>=0.28.1,<1",
+  "python-multipart==0.0.9",
+  "openenv-core>=0.2.0",
+]
+
+[project.scripts]
+server = "server.app:main"
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0.0"]
+training = [
+  "trl",
+  "transformers",
+  "datasets",
+  "accelerate",
+  "unsloth",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]

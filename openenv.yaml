@@ -140,7 +140,7 @@ baseline:
   script: inference.py
   required_env_vars: [API_BASE_URL, MODEL_NAME, HF_TOKEN]
   optional_env_vars: [ENV_URL]
-  latest_local_score: 0.0
+  latest_local_score: 0.7942
   latest_local_episodes: 30
   reproducibility:
     inference_temperature: 0.0
