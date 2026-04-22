@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 import os
+from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI, HTTPException, Query
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel
 
 from environment import SentinelEnv
@@ -25,6 +26,7 @@ app = FastAPI(
 
 # One env instance per session_id
 _sessions: dict[str, SentinelEnv] = {}
+_STATIC_DIR = Path(__file__).resolve().parent / "static"
 
 def _get_env(session_id: str) -> SentinelEnv:
     if session_id not in _sessions:
@@ -61,6 +63,24 @@ def health():
 
 @app.get("/")
 def root():
+    index_path = _STATIC_DIR / "index.html"
+    if index_path.exists():
+        return FileResponse(index_path)
+    return JSONResponse(
+        {
+            "name": "sentinel-env",
+            "status": "ok",
+            "summary": (
+                "SENTINEL trains an orchestrator to calibrate trust, verify risky "
+                "outputs, recover from failures, and finish long multi-agent tasks."
+            ),
+            "routes": ["/health", "/metadata", "/tasks", "/schema", "/grader", "/reset", "/step", "/state"],
+        }
+    )
+
+
+@app.get("/api")
+def api_root():
     return {
         "name": "sentinel-env",
         "status": "ok",

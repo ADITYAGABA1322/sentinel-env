@@ -21,6 +21,7 @@ COPY inference.py .
 COPY README.md .
 COPY pyproject.toml .
 COPY server ./server
+COPY static ./static
 
 # Create outputs directory for baseline scores
 RUN mkdir -p outputs
