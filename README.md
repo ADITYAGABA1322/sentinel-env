@@ -1,3 +1,14 @@
+---
+title: SENTINEL
+emoji: ":shield:"
+colorFrom: blue
+colorTo: green
+sdk: docker
+app_port: 7860
+pinned: false
+license: mit
+---
+
 # SENTINEL
 
 Self-Evolving Network for Training Intelligent Agents Under Adversarial Long-Horizon Tasks.
