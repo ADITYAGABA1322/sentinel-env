@@ -1,6 +1,5 @@
 ---
 title: SENTINEL
-emoji: ":shield:"
 colorFrom: blue
 colorTo: green
 sdk: docker
