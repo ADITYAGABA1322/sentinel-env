@@ -82,10 +82,25 @@ The episode `score` exposed in `info` and inference logs is normalized to `0.0-1
 ```bash
 curl http://localhost:7860/health
 curl http://localhost:7860/
+curl http://localhost:7860/api
 curl http://localhost:7860/metadata
 curl http://localhost:7860/tasks
 curl http://localhost:7860/schema
 ```
+
+The root route `/` serves the live SENTINEL dashboard on Hugging Face Spaces.
+Use `/api` for the JSON route index.
+
+## Live Dashboard
+
+The Space opens directly into a judge-demo dashboard:
+
+- live task progress and score
+- S0-S4 trust ledger bars
+- manual `delegate`, `verify`, `solve_independently`, and `skip` controls
+- heuristic auto-run
+- adversarial detection and poisoning counters
+- baseline proof table for random, heuristic, and oracle-lite policies
 
 Start an episode:
 

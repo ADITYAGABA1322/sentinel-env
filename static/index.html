@@ -1,0 +1,807 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SENTINEL</title>
+  <style>
+    :root {
+      --bg: #f7f8fb;
+      --panel: #ffffff;
+      --ink: #172033;
+      --muted: #667085;
+      --line: #d9dee8;
+      --accent: #0f766e;
+      --blue: #2563eb;
+      --red: #dc2626;
+      --amber: #b45309;
+      --green: #059669;
+      --shadow: 0 10px 30px rgba(16, 24, 40, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background: var(--bg);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: 0;
+    }
+
+    button, select, input {
+      font: inherit;
+    }
+
+    .shell {
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 18px 24px;
+      background: #111827;
+      color: #f8fafc;
+      border-bottom: 1px solid #0b1220;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0;
+    }
+
+    .mark {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(255,255,255,0.22);
+      background: #0f766e;
+      border-radius: 7px;
+      font-weight: 800;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 20px;
+      line-height: 1.1;
+      font-weight: 780;
+    }
+
+    .subhead {
+      margin-top: 3px;
+      color: #cbd5e1;
+      font-size: 13px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    main {
+      padding: 20px;
+      display: grid;
+      gap: 16px;
+      grid-template-columns: minmax(320px, 1.05fr) minmax(320px, 1fr);
+      grid-template-areas:
+        "mission trust"
+        "controls trust"
+        "events metrics";
+      align-items: start;
+      max-width: 1480px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    section {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      min-width: 0;
+    }
+
+    .section-head {
+      padding: 14px 16px 10px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 14px;
+      text-transform: uppercase;
+      color: #475467;
+      letter-spacing: 0;
+    }
+
+    .mission { grid-area: mission; }
+    .controls { grid-area: controls; }
+    .trust { grid-area: trust; }
+    .events { grid-area: events; }
+    .metrics { grid-area: metrics; }
+
+    .body {
+      padding: 16px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .stat {
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 12px;
+      background: #fbfcfe;
+      min-height: 76px;
+    }
+
+    .label {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.2;
+      margin-bottom: 8px;
+    }
+
+    .value {
+      font-size: 22px;
+      font-weight: 760;
+      line-height: 1.05;
+      overflow-wrap: anywhere;
+    }
+
+    .subtask {
+      margin-top: 14px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #f8fafc;
+      line-height: 1.45;
+      color: #1f2937;
+      min-height: 82px;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    select, input {
+      height: 38px;
+      border: 1px solid #cbd5e1;
+      background: #fff;
+      border-radius: 7px;
+      padding: 0 10px;
+      color: #111827;
+    }
+
+    input {
+      width: 84px;
+    }
+
+    button {
+      height: 38px;
+      border: 1px solid #cbd5e1;
+      background: #fff;
+      color: #111827;
+      border-radius: 7px;
+      padding: 0 12px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+
+    button:hover {
+      border-color: #94a3b8;
+      background: #f8fafc;
+    }
+
+    button.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    button.danger {
+      border-color: #fca5a5;
+      color: #991b1b;
+      background: #fff5f5;
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.55;
+    }
+
+    .control-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .control-grid button {
+      justify-content: center;
+      width: 100%;
+    }
+
+    .trust-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .specialist {
+      display: grid;
+      grid-template-columns: 56px 1fr 54px;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #fbfcfe;
+    }
+
+    .sid {
+      font-weight: 760;
+      color: #111827;
+    }
+
+    .bar {
+      height: 12px;
+      border-radius: 999px;
+      background: #e5e7eb;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .fill {
+      height: 100%;
+      width: 50%;
+      background: var(--blue);
+      border-radius: inherit;
+      transition: width 220ms ease, background 220ms ease;
+    }
+
+    .score {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      color: #334155;
+      font-weight: 700;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .chip {
+      border-radius: 999px;
+      padding: 5px 9px;
+      background: #eef2ff;
+      color: #3730a3;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .chip.live { background: #ecfdf3; color: #027a48; }
+    .chip.warn { background: #fff7ed; color: #9a3412; }
+    .chip.fail { background: #fef2f2; color: #b91c1c; }
+
+    .progress {
+      height: 10px;
+      background: #e5e7eb;
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 12px;
+    }
+
+    .progress span {
+      display: block;
+      height: 100%;
+      width: 0%;
+      background: var(--accent);
+      border-radius: inherit;
+      transition: width 220ms ease;
+    }
+
+    .event-list {
+      display: grid;
+      gap: 8px;
+      max-height: 360px;
+      overflow: auto;
+      padding-right: 4px;
+    }
+
+    .event {
+      display: grid;
+      grid-template-columns: 54px 1fr 64px;
+      gap: 10px;
+      align-items: start;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #fbfcfe;
+      font-size: 13px;
+    }
+
+    .event strong {
+      color: #111827;
+    }
+
+    .event .reward {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      font-weight: 760;
+      color: var(--accent);
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .baseline-bars {
+      margin-top: 14px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .baseline-row {
+      display: grid;
+      grid-template-columns: 118px 1fr 48px;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+    }
+
+    .mini-bar {
+      height: 10px;
+      background: #e5e7eb;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .mini-bar span {
+      display: block;
+      height: 100%;
+      border-radius: inherit;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    @media (max-width: 980px) {
+      header {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      main {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+          "mission"
+          "trust"
+          "controls"
+          "metrics"
+          "events";
+        padding: 14px;
+      }
+
+      .grid, .control-grid, .metric-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 560px) {
+      .grid, .control-grid, .metric-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .specialist {
+        grid-template-columns: 44px 1fr 48px;
+      }
+
+      .event {
+        grid-template-columns: 44px 1fr;
+      }
+
+      .event .reward {
+        grid-column: 2;
+        text-align: left;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <div class="brand">
+        <div class="mark">S</div>
+        <div>
+          <h1>SENTINEL</h1>
+          <div class="subhead">Multi-agent trust calibration environment</div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <select id="taskSelect" aria-label="Task">
+          <option value="task1">Task 1 - Easy</option>
+          <option value="task2">Task 2 - Medium</option>
+          <option value="task3" selected>Task 3 - Hard</option>
+        </select>
+        <input id="seedInput" aria-label="Seed" type="number" value="42">
+        <button id="resetBtn" class="primary" type="button">Reset</button>
+        <button id="autoBtn" type="button">Auto Run</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="mission">
+        <div class="section-head">
+          <h2>Mission</h2>
+          <div class="chips">
+            <span id="statusChip" class="chip live">READY</span>
+            <span id="scenarioChip" class="chip">SCENARIO</span>
+          </div>
+        </div>
+        <div class="body">
+          <div class="grid">
+            <div class="stat">
+              <div class="label">Score</div>
+              <div id="scoreValue" class="value">0.000</div>
+            </div>
+            <div class="stat">
+              <div class="label">Step</div>
+              <div id="stepValue" class="value">0/45</div>
+            </div>
+            <div class="stat">
+              <div class="label">Complete</div>
+              <div id="completeValue" class="value">0/20</div>
+            </div>
+            <div class="stat">
+              <div class="label">Stakes</div>
+              <div id="stakesValue" class="value">0.00</div>
+            </div>
+          </div>
+          <div class="progress"><span id="progressFill"></span></div>
+          <div id="subtaskText" class="subtask">Reset an episode to begin.</div>
+        </div>
+      </section>
+
+      <section class="trust">
+        <div class="section-head">
+          <h2>Trust Ledger</h2>
+          <div class="chips">
+            <span id="detectChip" class="chip">0 detected</span>
+            <span id="poisonChip" class="chip warn">0 poison</span>
+          </div>
+        </div>
+        <div class="body">
+          <div id="trustList" class="trust-list"></div>
+        </div>
+      </section>
+
+      <section class="controls">
+        <div class="section-head">
+          <h2>Actions</h2>
+          <div class="toolbar">
+            <select id="specialistSelect" aria-label="Specialist"></select>
+          </div>
+        </div>
+        <div class="body">
+          <div class="control-grid">
+            <button id="delegateBtn" class="primary" type="button">Delegate</button>
+            <button id="verifyBtn" type="button">Verify</button>
+            <button id="selfBtn" type="button">Self Solve</button>
+            <button id="skipBtn" class="danger" type="button">Skip</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="events">
+        <div class="section-head">
+          <h2>Episode Events</h2>
+          <span id="sessionText" class="muted">No session</span>
+        </div>
+        <div class="body">
+          <div id="eventList" class="event-list"></div>
+        </div>
+      </section>
+
+      <section class="metrics">
+        <div class="section-head">
+          <h2>Baseline Proof</h2>
+          <span class="muted">20 episodes per task</span>
+        </div>
+        <div class="body">
+          <div class="metric-grid">
+            <div class="stat">
+              <div class="label">Random</div>
+              <div class="value">0.714</div>
+            </div>
+            <div class="stat">
+              <div class="label">Heuristic</div>
+              <div class="value">0.816</div>
+            </div>
+            <div class="stat">
+              <div class="label">Oracle-lite</div>
+              <div class="value">0.872</div>
+            </div>
+          </div>
+          <div class="baseline-bars">
+            <div class="baseline-row">
+              <span>Random</span>
+              <div class="mini-bar"><span style="width:71.4%;background:#ef4444"></span></div>
+              <strong>0.714</strong>
+            </div>
+            <div class="baseline-row">
+              <span>Heuristic</span>
+              <div class="mini-bar"><span style="width:81.6%;background:#2563eb"></span></div>
+              <strong>0.816</strong>
+            </div>
+            <div class="baseline-row">
+              <span>Oracle-lite</span>
+              <div class="mini-bar"><span style="width:87.2%;background:#059669"></span></div>
+              <strong>0.872</strong>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const ids = ["S0", "S1", "S2", "S3", "S4"];
+    const state = {
+      sessionId: null,
+      taskType: "task3",
+      observation: null,
+      done: true,
+      running: false,
+      events: []
+    };
+
+    const el = {
+      taskSelect: document.getElementById("taskSelect"),
+      seedInput: document.getElementById("seedInput"),
+      resetBtn: document.getElementById("resetBtn"),
+      autoBtn: document.getElementById("autoBtn"),
+      specialistSelect: document.getElementById("specialistSelect"),
+      delegateBtn: document.getElementById("delegateBtn"),
+      verifyBtn: document.getElementById("verifyBtn"),
+      selfBtn: document.getElementById("selfBtn"),
+      skipBtn: document.getElementById("skipBtn"),
+      statusChip: document.getElementById("statusChip"),
+      scenarioChip: document.getElementById("scenarioChip"),
+      scoreValue: document.getElementById("scoreValue"),
+      stepValue: document.getElementById("stepValue"),
+      completeValue: document.getElementById("completeValue"),
+      stakesValue: document.getElementById("stakesValue"),
+      progressFill: document.getElementById("progressFill"),
+      subtaskText: document.getElementById("subtaskText"),
+      trustList: document.getElementById("trustList"),
+      detectChip: document.getElementById("detectChip"),
+      poisonChip: document.getElementById("poisonChip"),
+      sessionText: document.getElementById("sessionText"),
+      eventList: document.getElementById("eventList")
+    };
+
+    function trustColor(value) {
+      if (value >= 0.72) return "#059669";
+      if (value >= 0.48) return "#2563eb";
+      if (value >= 0.30) return "#b45309";
+      return "#dc2626";
+    }
+
+    function bestSpecialist() {
+      const obs = state.observation;
+      if (!obs) return "S0";
+      return obs.available_specialists
+        .slice()
+        .sort((a, b) => (obs.trust_snapshot[b] ?? 0.5) - (obs.trust_snapshot[a] ?? 0.5))[0];
+    }
+
+    function renderTrust() {
+      const trust = state.observation?.trust_snapshot || Object.fromEntries(ids.map(id => [id, 0.5]));
+      el.trustList.innerHTML = ids.map(id => {
+        const value = Number(trust[id] ?? 0.5);
+        const pct = Math.round(value * 100);
+        return `
+          <div class="specialist">
+            <div class="sid">${id}</div>
+            <div class="bar"><div class="fill" style="width:${pct}%;background:${trustColor(value)}"></div></div>
+            <div class="score">${value.toFixed(2)}</div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderSpecialists() {
+      const available = state.observation?.available_specialists || ids;
+      const selected = el.specialistSelect.value || bestSpecialist();
+      el.specialistSelect.innerHTML = available.map(id => `<option value="${id}">${id}</option>`).join("");
+      el.specialistSelect.value = available.includes(selected) ? selected : bestSpecialist();
+    }
+
+    function renderEvents() {
+      if (!state.events.length) {
+        el.eventList.innerHTML = `<div class="muted">No events yet.</div>`;
+        return;
+      }
+      el.eventList.innerHTML = state.events.slice(-16).reverse().map(item => `
+        <div class="event">
+          <strong>#${item.step}</strong>
+          <div>${item.action}<br><span class="muted">${item.summary}</span></div>
+          <div class="reward">${item.reward}</div>
+        </div>
+      `).join("");
+    }
+
+    function render(result) {
+      if (result) {
+        state.observation = result.observation;
+        state.done = Boolean(result.done);
+      }
+      const obs = state.observation;
+      if (!obs) {
+        renderTrust();
+        renderSpecialists();
+        renderEvents();
+        return;
+      }
+
+      const info = result?.info || {};
+      const completed = obs.subtasks_total - obs.subtasks_remaining;
+      const progress = obs.subtasks_total ? (completed / obs.subtasks_total) * 100 : 0;
+      const status = state.done ? "DONE" : obs.episode_status.toUpperCase();
+
+      el.statusChip.textContent = status;
+      el.statusChip.className = `chip ${state.done ? "live" : "live"}`;
+      el.scenarioChip.textContent = obs.scenario_id;
+      el.scoreValue.textContent = Number(info.score ?? 0).toFixed(3);
+      el.stepValue.textContent = `${obs.step_count}/${obs.max_steps}`;
+      el.completeValue.textContent = `${completed}/${obs.subtasks_total}`;
+      el.stakesValue.textContent = Number(obs.stakes_level).toFixed(2);
+      el.progressFill.style.width = `${Math.max(0, Math.min(100, progress))}%`;
+      el.subtaskText.textContent = state.done ? "Episode complete." : obs.current_subtask;
+      el.sessionText.textContent = state.sessionId ? state.sessionId.slice(0, 8) : "No session";
+      el.detectChip.textContent = `${info.adversarial_detections ?? 0} detected`;
+      el.poisonChip.textContent = `${info.adversarial_poisonings ?? 0} poison`;
+      el.poisonChip.className = `chip ${(info.adversarial_poisonings ?? 0) > 0 ? "fail" : "warn"}`;
+
+      renderTrust();
+      renderSpecialists();
+      renderEvents();
+      setDisabled(state.done || state.running);
+    }
+
+    function setDisabled(disabled) {
+      el.delegateBtn.disabled = disabled;
+      el.verifyBtn.disabled = disabled;
+      el.selfBtn.disabled = disabled;
+      el.skipBtn.disabled = disabled;
+    }
+
+    async function resetEpisode() {
+      state.running = true;
+      el.resetBtn.disabled = true;
+      try {
+        const seed = Number(el.seedInput.value || 0);
+        const response = await fetch("/reset", {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({task_type: el.taskSelect.value, seed})
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.detail || "reset failed");
+        state.taskType = result.observation.task_type;
+        state.sessionId = result.info.session_id;
+        state.events = [];
+        state.done = false;
+        addEvent(0, "reset", "Episode initialized.", "0.00");
+        render(result);
+      } catch (error) {
+        addEvent(0, "error", error.message, "0.00");
+        renderEvents();
+      } finally {
+        state.running = false;
+        el.resetBtn.disabled = false;
+        setDisabled(state.done);
+      }
+    }
+
+    function addEvent(step, action, summary, reward) {
+      state.events.push({step, action, summary, reward});
+    }
+
+    function actionPayload(type, specialist) {
+      const obs = state.observation;
+      return {
+        session_id: state.sessionId,
+        task_type: obs.task_type,
+        action_type: type,
+        specialist_id: specialist,
+        subtask_response: type === "solve_independently" ? "SELF_SOLVED" : null,
+        reasoning: `ui-${type}${specialist ? "-" + specialist : ""}`
+      };
+    }
+
+    async function stepEpisode(type, specialist = null) {
+      if (!state.sessionId || state.done || state.running) return;
+      state.running = true;
+      setDisabled(true);
+      try {
+        const chosen = specialist || el.specialistSelect.value || bestSpecialist();
+        const payload = actionPayload(type, type === "delegate" || type === "verify" ? chosen : null);
+        const response = await fetch(`/step?session_id=${encodeURIComponent(state.sessionId)}`, {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify(payload)
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.detail || "step failed");
+        const reward = Number(result.reward.value || 0).toFixed(2);
+        const label = payload.specialist_id ? `${type}:${payload.specialist_id}` : type;
+        addEvent(result.info.step_count, label, result.reward.reason, reward);
+        render(result);
+      } catch (error) {
+        addEvent(state.observation?.step_count || 0, "error", error.message, "0.00");
+        renderEvents();
+      } finally {
+        state.running = false;
+        setDisabled(state.done);
+      }
+    }
+
+    async function autoRun() {
+      if (!state.observation || state.done) await resetEpisode();
+      let guard = 0;
+      while (!state.done && guard < 60) {
+        const obs = state.observation;
+        const best = bestSpecialist();
+        const trust = obs.trust_snapshot[best] ?? 0.5;
+        const type = obs.stakes_level >= 0.70 && trust < 0.65 ? "verify" : "delegate";
+        await stepEpisode(type, best);
+        guard += 1;
+        await new Promise(resolve => setTimeout(resolve, 180));
+      }
+    }
+
+    el.resetBtn.addEventListener("click", resetEpisode);
+    el.delegateBtn.addEventListener("click", () => stepEpisode("delegate"));
+    el.verifyBtn.addEventListener("click", () => stepEpisode("verify"));
+    el.selfBtn.addEventListener("click", () => stepEpisode("solve_independently"));
+    el.skipBtn.addEventListener("click", () => stepEpisode("skip"));
+    el.autoBtn.addEventListener("click", autoRun);
+
+    render();
+    resetEpisode();
+  </script>
+</body>
+</html>
