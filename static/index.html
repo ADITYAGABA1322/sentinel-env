@@ -3,52 +3,142 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>SENTINEL</title>
+  <title>SENTINEL Trust Mission Control</title>
   <style>
     :root {
-      --bg: #f7f8fb;
-      --panel: #ffffff;
-      --ink: #172033;
-      --muted: #667085;
-      --line: #d9dee8;
-      --accent: #0f766e;
-      --blue: #2563eb;
-      --red: #dc2626;
-      --amber: #b45309;
-      --green: #059669;
-      --shadow: 0 10px 30px rgba(16, 24, 40, 0.08);
+      --bg: #060706;
+      --panel: #10130f;
+      --panel-2: #151911;
+      --panel-3: #1b2017;
+      --ink: #f6f1df;
+      --muted: #aaa48e;
+      --faint: #6e705f;
+      --line: #343a2d;
+      --jade: #27e0a1;
+      --jade-soft: rgba(39, 224, 161, 0.14);
+      --amber: #f5ba41;
+      --amber-soft: rgba(245, 186, 65, 0.14);
+      --flame: #ff5f45;
+      --flame-soft: rgba(255, 95, 69, 0.14);
+      --blue: #73a7ff;
+      --blue-soft: rgba(115, 167, 255, 0.14);
+      --magenta: #e879f9;
+      --magenta-soft: rgba(232, 121, 249, 0.12);
+      --cream: #fff6d8;
+      --shadow: 0 22px 70px rgba(0, 0, 0, 0.38);
     }
 
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      background: var(--bg);
+    }
 
     body {
       margin: 0;
       min-height: 100vh;
       color: var(--ink);
-      background: var(--bg);
+      background:
+        linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.022) 1px, transparent 1px),
+        linear-gradient(145deg, #060706 0%, #11130d 44%, #0b0e0a 100%);
+      background-size: 32px 32px, 32px 32px, auto;
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       letter-spacing: 0;
     }
 
-    button, select, input {
+    button,
+    select,
+    input {
       font: inherit;
+    }
+
+    button {
+      min-height: 40px;
+      border: 1px solid #4a5241;
+      background: #171b13;
+      color: var(--ink);
+      border-radius: 8px;
+      padding: 0 13px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      white-space: nowrap;
+      transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
+    }
+
+    button:hover {
+      border-color: #80906f;
+      background: #202719;
+      transform: translateY(-1px);
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.52;
+      transform: none;
+    }
+
+    button.primary {
+      border-color: rgba(39, 224, 161, 0.72);
+      background: linear-gradient(180deg, #1e6b54, #134736);
+      color: #f7fffb;
+    }
+
+    button.warn {
+      border-color: rgba(245, 186, 65, 0.72);
+      background: linear-gradient(180deg, #73551d, #403012);
+      color: #fff4d0;
+    }
+
+    button.danger {
+      border-color: rgba(255, 95, 69, 0.72);
+      background: #2a1510;
+      color: #ffd8d1;
+    }
+
+    select,
+    input {
+      min-height: 40px;
+      border: 1px solid #4a5241;
+      background: #0f120d;
+      color: var(--ink);
+      border-radius: 8px;
+      padding: 0 11px;
+      outline: none;
+    }
+
+    select:focus,
+    input:focus,
+    button:focus {
+      border-color: var(--jade);
+      box-shadow: 0 0 0 3px rgba(39, 224, 161, 0.16);
+    }
+
+    input {
+      width: 90px;
     }
 
     .shell {
       min-height: 100vh;
-      display: grid;
-      grid-template-rows: auto 1fr;
     }
 
     header {
-      display: flex;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: grid;
+      grid-template-columns: minmax(280px, 1fr) auto;
+      gap: 18px;
       align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      padding: 18px 24px;
-      background: #111827;
-      color: #f8fafc;
-      border-bottom: 1px solid #0b1220;
+      padding: 16px 22px;
+      background: rgba(7, 8, 6, 0.94);
+      border-bottom: 1px solid #2e3529;
+      backdrop-filter: blur(14px);
     }
 
     .brand {
@@ -59,107 +149,441 @@
     }
 
     .mark {
-      width: 34px;
-      height: 34px;
+      width: 42px;
+      height: 42px;
+      border: 1px solid rgba(39, 224, 161, 0.64);
+      border-radius: 8px;
       display: grid;
       place-items: center;
-      border: 1px solid rgba(255,255,255,0.22);
-      background: #0f766e;
-      border-radius: 7px;
-      font-weight: 800;
+      background:
+        linear-gradient(135deg, rgba(39, 224, 161, 0.28), rgba(245, 186, 65, 0.1)),
+        #10150f;
+      color: #dfffee;
+      font-weight: 860;
+      box-shadow: inset 0 0 22px rgba(39, 224, 161, 0.16);
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin: 0;
     }
 
     h1 {
-      margin: 0;
       font-size: 20px;
-      line-height: 1.1;
-      font-weight: 780;
+      line-height: 1.05;
+      font-weight: 840;
     }
 
     .subhead {
-      margin-top: 3px;
-      color: #cbd5e1;
+      margin-top: 5px;
+      color: var(--muted);
       font-size: 13px;
-      white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .header-actions {
       display: flex;
       align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
       justify-content: flex-end;
+      gap: 9px;
+      flex-wrap: wrap;
     }
 
-    main {
-      padding: 20px;
-      display: grid;
-      gap: 16px;
-      grid-template-columns: minmax(320px, 1.05fr) minmax(320px, 1fr);
-      grid-template-areas:
-        "mission trust"
-        "controls trust"
-        "events metrics"
-        "story story"
-        "architecture themes";
-      align-items: start;
-      max-width: 1480px;
-      width: 100%;
+    .console {
+      width: min(1540px, 100%);
       margin: 0 auto;
+      padding: 18px;
+      display: grid;
+      gap: 14px;
+      grid-template-columns: minmax(420px, 1.35fr) minmax(340px, 0.85fr);
+      grid-template-areas:
+        "theater command"
+        "mission trust"
+        "proof events"
+        "flow themes";
+      align-items: start;
     }
 
     section {
-      background: var(--panel);
+      min-width: 0;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.035), transparent 38%), var(--panel);
       border: 1px solid var(--line);
       border-radius: 8px;
       box-shadow: var(--shadow);
-      min-width: 0;
+      overflow: hidden;
     }
 
+    .theater { grid-area: theater; }
+    .command { grid-area: command; }
+    .mission { grid-area: mission; }
+    .trust { grid-area: trust; }
+    .proof { grid-area: proof; }
+    .events { grid-area: events; }
+    .flow { grid-area: flow; }
+    .themes { grid-area: themes; }
+
     .section-head {
-      padding: 14px 16px 10px;
-      border-bottom: 1px solid var(--line);
+      min-height: 54px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 12px;
+      padding: 13px 15px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(0, 0, 0, 0.14);
     }
 
     h2 {
-      margin: 0;
-      font-size: 14px;
+      font-size: 12px;
       text-transform: uppercase;
-      color: #475467;
       letter-spacing: 0;
+      color: #d6d0b7;
+      font-weight: 820;
     }
-
-    .mission { grid-area: mission; }
-    .controls { grid-area: controls; }
-    .trust { grid-area: trust; }
-    .events { grid-area: events; }
-    .metrics { grid-area: metrics; }
-    .story { grid-area: story; }
-    .architecture { grid-area: architecture; }
-    .themes { grid-area: themes; }
 
     .body {
-      padding: 16px;
+      padding: 15px;
     }
 
-    .grid {
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 27px;
+      border: 1px solid #46503d;
+      border-radius: 999px;
+      padding: 0 9px;
+      font-size: 12px;
+      font-weight: 760;
+      color: #d8d1ba;
+      background: #161a13;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .chip.live {
+      border-color: rgba(39, 224, 161, 0.45);
+      color: #a7f9d8;
+      background: var(--jade-soft);
+    }
+
+    .chip.warn {
+      border-color: rgba(245, 186, 65, 0.46);
+      color: #ffe0a3;
+      background: var(--amber-soft);
+    }
+
+    .chip.fail {
+      border-color: rgba(255, 95, 69, 0.52);
+      color: #ffc3b8;
+      background: var(--flame-soft);
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .stage {
+      position: relative;
+      min-height: 464px;
+      border: 1px solid #333c2b;
+      border-radius: 8px;
+      background:
+        linear-gradient(90deg, transparent 0, transparent calc(50% - 1px), rgba(245, 186, 65, 0.28) 50%, transparent calc(50% + 1px), transparent 100%),
+        linear-gradient(rgba(39, 224, 161, 0.055) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(39, 224, 161, 0.04) 1px, transparent 1px),
+        #080a08;
+      background-size: auto, 26px 26px, 26px 26px, auto;
+      overflow: hidden;
+    }
+
+    .stage::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      border: 1px solid rgba(255, 255, 255, 0.045);
+      border-radius: inherit;
+    }
+
+    .stage-topline {
+      position: absolute;
+      top: 13px;
+      left: 14px;
+      right: 14px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      z-index: 2;
+    }
+
+    .stage-label {
+      min-height: 46px;
+      border: 1px solid #343c2e;
+      border-radius: 8px;
+      padding: 8px 10px;
+      background: rgba(13, 16, 11, 0.86);
+    }
+
+    .stage-label span {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.2;
+    }
+
+    .stage-label strong {
+      display: block;
+      margin-top: 4px;
+      font-size: 15px;
+      color: var(--cream);
+      overflow-wrap: anywhere;
+    }
+
+    .brain-card {
+      position: absolute;
+      top: 95px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: min(360px, calc(100% - 32px));
+      min-height: 96px;
+      border: 1px solid rgba(39, 224, 161, 0.56);
+      border-radius: 8px;
+      padding: 15px;
+      background:
+        linear-gradient(180deg, rgba(39, 224, 161, 0.18), rgba(39, 224, 161, 0.035)),
+        #0f1711;
+      box-shadow: 0 0 0 1px rgba(39, 224, 161, 0.06), 0 18px 42px rgba(0, 0, 0, 0.42);
+      text-align: center;
+      z-index: 3;
+    }
+
+    .node-title {
+      font-size: 18px;
+      font-weight: 820;
+      color: #ecfff5;
+    }
+
+    .node-copy {
+      margin-top: 6px;
+      color: #b8d7c5;
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    .signal-line {
+      position: absolute;
+      left: 50%;
+      top: 190px;
+      bottom: 178px;
+      width: 1px;
+      background: linear-gradient(180deg, rgba(39, 224, 161, 0.7), rgba(245, 186, 65, 0.6), rgba(255, 95, 69, 0.55));
+      opacity: 0.9;
+      z-index: 1;
+    }
+
+    .specialist-grid {
+      position: absolute;
+      left: 15px;
+      right: 15px;
+      bottom: 96px;
+      display: grid;
+      grid-template-columns: repeat(5, minmax(92px, 1fr));
+      gap: 10px;
+      z-index: 3;
+    }
+
+    .node {
+      min-height: 116px;
+      border: 1px solid #3a4433;
+      border-radius: 8px;
+      padding: 10px;
+      background: rgba(16, 19, 15, 0.94);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .node::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 0;
+      height: 3px;
+      background: var(--node-color, var(--blue));
+    }
+
+    .node.active {
+      border-color: var(--jade);
+      box-shadow: 0 0 0 2px rgba(39, 224, 161, 0.13);
+    }
+
+    .node.watch {
+      border-color: rgba(245, 186, 65, 0.72);
+    }
+
+    .node.quarantine {
+      border-color: rgba(255, 95, 69, 0.74);
+    }
+
+    .node-id {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      color: #f9f3d9;
+      font-weight: 820;
+      font-size: 16px;
+    }
+
+    .node-trust {
+      margin-top: 14px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .trust-rail {
+      height: 10px;
+      border-radius: 999px;
+      background: #2a3024;
+      overflow: hidden;
+    }
+
+    .trust-rail span {
+      display: block;
+      height: 100%;
+      width: calc(var(--trust, 0.5) * 100%);
+      border-radius: inherit;
+      background: var(--node-color, var(--blue));
+      transition: width 220ms ease, background 220ms ease;
+    }
+
+    .node-meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 12px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .outcome-strip {
+      position: absolute;
+      left: 15px;
+      right: 15px;
+      bottom: 14px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      z-index: 3;
+    }
+
+    .outcome {
+      min-height: 62px;
+      border: 1px solid #373f31;
+      border-radius: 8px;
+      padding: 10px;
+      background: rgba(11, 13, 9, 0.91);
+    }
+
+    .outcome span {
+      color: var(--muted);
+      font-size: 11px;
+      display: block;
+    }
+
+    .outcome strong {
+      display: block;
+      margin-top: 5px;
+      font-size: 15px;
+      color: var(--cream);
+      overflow-wrap: anywhere;
+    }
+
+    .command-grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    .field-row {
+      display: grid;
+      grid-template-columns: 1fr 96px;
+      gap: 10px;
+    }
+
+    .button-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .action-row {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 9px;
+    }
+
+    .decision-card {
+      border: 1px solid #394132;
+      border-radius: 8px;
+      padding: 13px;
+      background: var(--panel-2);
+    }
+
+    .decision-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .decision-title strong {
+      color: var(--cream);
+    }
+
+    .recommendation {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: center;
+      margin-top: 10px;
+    }
+
+    .recommendation-output {
+      min-height: 44px;
+      border: 1px solid rgba(39, 224, 161, 0.32);
+      border-radius: 8px;
+      padding: 9px 10px;
+      background: rgba(39, 224, 161, 0.08);
+      color: #c9ffe8;
+      font-weight: 820;
+      overflow-wrap: anywhere;
+    }
+
+    .stats-grid {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 10px;
     }
 
     .stat {
-      border: 1px solid var(--line);
-      border-radius: 7px;
-      padding: 12px;
-      background: #fbfcfe;
-      min-height: 76px;
+      min-height: 82px;
+      border: 1px solid #394132;
+      border-radius: 8px;
+      padding: 11px;
+      background: var(--panel-2);
     }
 
     .label {
@@ -170,352 +594,133 @@
     }
 
     .value {
-      font-size: 22px;
-      font-weight: 760;
-      line-height: 1.05;
+      font-size: 24px;
+      line-height: 1;
+      color: var(--cream);
+      font-weight: 840;
+      font-variant-numeric: tabular-nums;
       overflow-wrap: anywhere;
     }
 
     .subtask {
-      margin-top: 14px;
-      padding: 14px;
-      border: 1px solid var(--line);
-      border-radius: 7px;
-      background: #f8fafc;
+      margin-top: 12px;
+      min-height: 84px;
+      border: 1px solid #3a4433;
+      border-radius: 8px;
+      padding: 13px;
+      background: #0d100b;
+      color: #e8e1c9;
       line-height: 1.45;
-      color: #1f2937;
-      min-height: 82px;
     }
-
-    .toolbar {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-
-    select, input {
-      height: 38px;
-      border: 1px solid #cbd5e1;
-      background: #fff;
-      border-radius: 7px;
-      padding: 0 10px;
-      color: #111827;
-    }
-
-    input {
-      width: 84px;
-    }
-
-    button {
-      height: 38px;
-      border: 1px solid #cbd5e1;
-      background: #fff;
-      color: #111827;
-      border-radius: 7px;
-      padding: 0 12px;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      white-space: nowrap;
-    }
-
-    button:hover {
-      border-color: #94a3b8;
-      background: #f8fafc;
-    }
-
-    button.primary {
-      background: var(--accent);
-      border-color: var(--accent);
-      color: #fff;
-    }
-
-    button.danger {
-      border-color: #fca5a5;
-      color: #991b1b;
-      background: #fff5f5;
-    }
-
-    button:disabled {
-      cursor: not-allowed;
-      opacity: 0.55;
-    }
-
-    .control-grid {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 10px;
-    }
-
-    .control-grid button {
-      justify-content: center;
-      width: 100%;
-    }
-
-    .trust-list {
-      display: grid;
-      gap: 10px;
-    }
-
-    .specialist {
-      display: grid;
-      grid-template-columns: 56px 1fr 54px;
-      align-items: center;
-      gap: 12px;
-      padding: 12px;
-      border: 1px solid var(--line);
-      border-radius: 7px;
-      background: #fbfcfe;
-    }
-
-    .sid {
-      font-weight: 760;
-      color: #111827;
-    }
-
-    .bar {
-      height: 12px;
-      border-radius: 999px;
-      background: #e5e7eb;
-      overflow: hidden;
-      position: relative;
-    }
-
-    .fill {
-      height: 100%;
-      width: 50%;
-      background: var(--blue);
-      border-radius: inherit;
-      transition: width 220ms ease, background 220ms ease;
-    }
-
-    .score {
-      text-align: right;
-      font-variant-numeric: tabular-nums;
-      color: #334155;
-      font-weight: 700;
-    }
-
-    .chips {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    .chip {
-      border-radius: 999px;
-      padding: 5px 9px;
-      background: #eef2ff;
-      color: #3730a3;
-      font-size: 12px;
-      font-weight: 700;
-    }
-
-    .chip.live { background: #ecfdf3; color: #027a48; }
-    .chip.warn { background: #fff7ed; color: #9a3412; }
-    .chip.fail { background: #fef2f2; color: #b91c1c; }
 
     .progress {
-      height: 10px;
-      background: #e5e7eb;
+      height: 12px;
+      margin-top: 12px;
       border-radius: 999px;
       overflow: hidden;
-      margin-top: 12px;
+      background: #2a3024;
     }
 
     .progress span {
       display: block;
       height: 100%;
       width: 0%;
-      background: var(--accent);
+      background: linear-gradient(90deg, var(--flame), var(--amber), var(--jade));
       border-radius: inherit;
       transition: width 220ms ease;
     }
 
-    .event-list {
+    .risk-meter {
       display: grid;
       gap: 8px;
-      max-height: 360px;
-      overflow: auto;
-      padding-right: 4px;
+      margin-top: 12px;
     }
 
-    .event {
+    .risk-track {
+      height: 12px;
+      border-radius: 999px;
+      background: #2a3024;
+      overflow: hidden;
+    }
+
+    .risk-track span {
+      display: block;
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--jade), var(--amber), var(--flame));
+      border-radius: inherit;
+      transition: width 220ms ease;
+    }
+
+    .trust-list {
       display: grid;
-      grid-template-columns: 54px 1fr 64px;
-      gap: 10px;
-      align-items: start;
+      gap: 9px;
+    }
+
+    .specialist {
+      display: grid;
+      grid-template-columns: 50px 1fr 58px;
+      gap: 11px;
+      align-items: center;
+      min-height: 52px;
+      border: 1px solid #394132;
+      border-radius: 8px;
       padding: 10px;
-      border: 1px solid var(--line);
-      border-radius: 7px;
-      background: #fbfcfe;
-      font-size: 13px;
+      background: var(--panel-2);
     }
 
-    .event strong {
-      color: #111827;
+    .sid {
+      color: var(--cream);
+      font-weight: 820;
     }
 
-    .event .reward {
+    .bar {
+      height: 12px;
+      border-radius: 999px;
+      background: #2a3024;
+      overflow: hidden;
+    }
+
+    .fill {
+      height: 100%;
+      width: 50%;
+      border-radius: inherit;
+      transition: width 220ms ease, background 220ms ease;
+    }
+
+    .score {
       text-align: right;
+      color: #e8e1c9;
+      font-weight: 820;
       font-variant-numeric: tabular-nums;
-      font-weight: 760;
-      color: var(--accent);
     }
 
-    .metric-grid {
+    .proof-grid {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 10px;
-    }
-
-    .story-grid {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) 72px minmax(0, 1fr);
-      gap: 14px;
+      grid-template-columns: minmax(280px, 0.95fr) minmax(300px, 1.05fr);
+      gap: 13px;
       align-items: stretch;
     }
 
-    .contrast {
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 14px;
-      background: #fbfcfe;
-    }
-
-    .contrast.before {
-      border-color: #fecaca;
-      background: #fff7f7;
-    }
-
-    .contrast.after {
-      border-color: #a7f3d0;
-      background: #f0fdf9;
-    }
-
-    .contrast-title {
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      align-items: center;
-      font-weight: 780;
-      margin-bottom: 12px;
-      color: #111827;
-    }
-
-    .score-pill {
-      border-radius: 999px;
-      padding: 5px 9px;
-      font-size: 12px;
-      font-weight: 800;
-      color: #fff;
-      background: #475569;
-      font-variant-numeric: tabular-nums;
-    }
-
-    .score-pill.bad { background: var(--red); }
-    .score-pill.good { background: var(--accent); }
-
-    .flow {
-      display: grid;
-      gap: 8px;
-    }
-
-    .flow-node {
-      border: 1px solid var(--line);
-      border-radius: 7px;
-      background: #fff;
-      padding: 10px;
-      line-height: 1.35;
-      min-height: 48px;
-    }
-
-    .before .flow-node.warn {
-      border-color: #fca5a5;
-      color: #7f1d1d;
-      background: #fff1f2;
-    }
-
-    .after .flow-node.clean {
-      border-color: #86efac;
-      color: #064e3b;
-      background: #ecfdf3;
-    }
-
-    .bridge {
-      display: grid;
-      place-items: center;
-      min-height: 100%;
-      color: #64748b;
-      font-size: 12px;
-      text-align: center;
-      line-height: 1.35;
-      border-left: 1px dashed #94a3b8;
-      border-right: 1px dashed #94a3b8;
-    }
-
-    .role-grid, .theme-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 10px;
-    }
-
-    .role, .theme-card {
-      border: 1px solid var(--line);
-      border-radius: 7px;
-      padding: 12px;
-      background: #fbfcfe;
-      min-height: 88px;
-    }
-
-    .role strong, .theme-card strong {
-      display: block;
-      margin-bottom: 6px;
-      color: #111827;
-    }
-
-    .theme-card.blue { border-color: #bfdbfe; background: #eff6ff; }
-    .theme-card.green { border-color: #bbf7d0; background: #f0fdf4; }
-    .theme-card.amber { border-color: #fde68a; background: #fffbeb; }
-    .theme-card.magenta { border-color: #fbcfe8; background: #fdf2f8; }
-
-    .status-strip {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 10px;
-      margin-bottom: 14px;
-    }
-
-    .status-item {
-      border: 1px solid #bbf7d0;
-      background: #f0fdf4;
-      color: #065f46;
-      border-radius: 7px;
-      padding: 10px 12px;
-      font-size: 13px;
-      font-weight: 720;
-    }
-
-    .baseline-bars {
-      margin-top: 14px;
+    .baseline-table {
       display: grid;
       gap: 10px;
     }
 
     .baseline-row {
       display: grid;
-      grid-template-columns: 118px 1fr 48px;
+      grid-template-columns: 98px 1fr 56px;
       align-items: center;
       gap: 10px;
+      min-height: 39px;
+      color: #e9e2ca;
       font-size: 13px;
     }
 
     .mini-bar {
-      height: 10px;
-      background: #e5e7eb;
+      height: 12px;
       border-radius: 999px;
+      background: #2a3024;
       overflow: hidden;
     }
 
@@ -525,62 +730,238 @@
       border-radius: inherit;
     }
 
-    .muted {
-      color: var(--muted);
+    .chart-frame {
+      min-height: 232px;
+      border: 1px solid #394132;
+      border-radius: 8px;
+      background: #f7f4ec;
+      padding: 8px;
+      display: grid;
+      place-items: center;
     }
 
-    @media (max-width: 980px) {
-      header {
-        align-items: flex-start;
-        flex-direction: column;
-      }
+    .chart-frame img {
+      display: block;
+      width: 100%;
+      max-height: 360px;
+      object-fit: contain;
+      border-radius: 4px;
+    }
 
-      main {
+    .event-list {
+      display: grid;
+      gap: 8px;
+      max-height: 432px;
+      overflow: auto;
+      padding-right: 2px;
+    }
+
+    .event {
+      display: grid;
+      grid-template-columns: 48px 1fr 58px;
+      gap: 10px;
+      align-items: start;
+      min-height: 52px;
+      border: 1px solid #394132;
+      border-radius: 8px;
+      padding: 9px;
+      background: var(--panel-2);
+      font-size: 13px;
+    }
+
+    .event strong {
+      color: var(--cream);
+    }
+
+    .event .reward {
+      text-align: right;
+      color: var(--jade);
+      font-weight: 840;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .flow-line {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 9px;
+    }
+
+    .flow-step {
+      position: relative;
+      min-height: 112px;
+      border: 1px solid #394132;
+      border-radius: 8px;
+      padding: 12px;
+      background: var(--panel-2);
+    }
+
+    .flow-step::before {
+      content: attr(data-num);
+      display: grid;
+      place-items: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 1px solid rgba(39, 224, 161, 0.45);
+      color: #b7ffdf;
+      background: #101a13;
+      font-weight: 820;
+      margin-bottom: 10px;
+    }
+
+    .flow-step strong {
+      display: block;
+      color: var(--cream);
+      margin-bottom: 7px;
+    }
+
+    .flow-step span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .theme-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .theme-card {
+      min-height: 132px;
+      border: 1px solid #394132;
+      border-radius: 8px;
+      padding: 12px;
+      background: var(--panel-2);
+    }
+
+    .theme-card strong {
+      display: block;
+      color: var(--cream);
+      margin-bottom: 8px;
+      font-size: 15px;
+    }
+
+    .theme-card span {
+      display: block;
+      color: var(--muted);
+      line-height: 1.38;
+      font-size: 13px;
+    }
+
+    .theme-card.blue {
+      border-color: rgba(115, 167, 255, 0.4);
+      background: var(--blue-soft);
+    }
+
+    .theme-card.green {
+      border-color: rgba(39, 224, 161, 0.4);
+      background: var(--jade-soft);
+    }
+
+    .theme-card.amber {
+      border-color: rgba(245, 186, 65, 0.4);
+      background: var(--amber-soft);
+    }
+
+    .theme-card.magenta {
+      border-color: rgba(232, 121, 249, 0.4);
+      background: var(--magenta-soft);
+    }
+
+    @media (max-width: 1180px) {
+      .console {
         grid-template-columns: 1fr;
         grid-template-areas:
+          "theater"
+          "command"
           "mission"
           "trust"
-          "controls"
-          "metrics"
+          "proof"
           "events"
-          "story"
-          "architecture"
+          "flow"
           "themes";
-        padding: 14px;
       }
 
-      .grid, .control-grid, .metric-grid, .role-grid, .theme-grid, .status-strip {
+      header {
+        grid-template-columns: 1fr;
+      }
+
+      .header-actions {
+        justify-content: flex-start;
+      }
+    }
+
+    @media (max-width: 860px) {
+      .console {
+        padding: 12px;
+      }
+
+      .stage {
+        min-height: 620px;
+      }
+
+      .stage-topline,
+      .outcome-strip,
+      .proof-grid,
+      .flow-line,
+      .theme-grid,
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .brain-card {
+        top: 190px;
+      }
+
+      .signal-line {
+        display: none;
+      }
+
+      .specialist-grid {
+        top: 315px;
+        bottom: auto;
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
-      .story-grid {
-        grid-template-columns: 1fr;
+      .outcome-strip {
+        bottom: 12px;
       }
 
-      .bridge {
-        min-height: 58px;
-        border-left: 0;
-        border-right: 0;
-        border-top: 1px dashed #94a3b8;
-        border-bottom: 1px dashed #94a3b8;
+      .action-row {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
       }
     }
 
     @media (max-width: 560px) {
-      .grid, .control-grid, .metric-grid, .role-grid, .theme-grid, .status-strip {
+      header {
+        padding: 13px;
+      }
+
+      .field-row,
+      .button-row,
+      .recommendation,
+      .specialist,
+      .event,
+      .baseline-row {
         grid-template-columns: 1fr;
       }
 
-      .specialist {
-        grid-template-columns: 44px 1fr 48px;
+      input {
+        width: 100%;
       }
 
-      .event {
-        grid-template-columns: 44px 1fr;
+      .specialist-grid {
+        grid-template-columns: 1fr;
       }
 
-      .event .reward {
-        grid-column: 2;
+      .stage {
+        min-height: 980px;
+      }
+
+      .event .reward,
+      .score {
         text-align: left;
       }
     }
@@ -592,8 +973,8 @@
       <div class="brand">
         <div class="mark">S</div>
         <div>
-          <h1>SENTINEL</h1>
-          <div class="subhead">Multi-agent trust calibration environment</div>
+          <h1>SENTINEL Trust Mission Control</h1>
+          <div class="subhead">OpenEnv RL environment for adversarial multi-agent trust calibration</div>
         </div>
       </div>
       <div class="header-actions">
@@ -603,33 +984,144 @@
           <option value="task3" selected>Task 3 - Hard</option>
         </select>
         <input id="seedInput" aria-label="Seed" type="number" value="42">
-        <button id="resetBtn" class="primary" type="button">Reset</button>
-        <button id="swapBtn" type="button">Swap Profiles</button>
-        <button id="autoBtn" type="button">Auto Run</button>
+        <button id="resetBtn" class="primary" type="button">Reset Episode</button>
+        <button id="swapBtn" class="warn" type="button">Swap Profiles</button>
+        <button id="autoBtn" type="button">Auto Policy</button>
       </div>
     </header>
 
-    <main>
-      <section class="mission">
+    <main class="console">
+      <section class="theater">
         <div class="section-head">
-          <h2>Mission</h2>
+          <h2>Live Trust Theater</h2>
           <div class="chips">
             <span id="statusChip" class="chip live">READY</span>
             <span id="scenarioChip" class="chip">SCENARIO</span>
           </div>
         </div>
         <div class="body">
-          <div class="grid">
+          <div class="stage">
+            <div class="stage-topline">
+              <div class="stage-label">
+                <span>Profile rule</span>
+                <strong>reshuffle on reset</strong>
+              </div>
+              <div class="stage-label">
+                <span>Observation rule</span>
+                <strong>behavior only</strong>
+              </div>
+              <div class="stage-label">
+                <span>Failure mode</span>
+                <strong>high-stakes poison</strong>
+              </div>
+            </div>
+
+            <div class="brain-card">
+              <div class="node-title">Orchestrator</div>
+              <div id="leadMove" class="node-copy">Reset starts a fresh trust game.</div>
+            </div>
+            <div class="signal-line"></div>
+
+            <div class="specialist-grid" id="networkGrid">
+              <div id="node-S0" class="node" style="--trust:0.5;--node-color:#73a7ff">
+                <div class="node-id"><span>S0</span><span>0.50</span></div>
+                <div class="node-trust"><div class="trust-rail"><span></span></div></div>
+                <div class="node-meta"><span>public slot</span><span>watch</span></div>
+              </div>
+              <div id="node-S1" class="node" style="--trust:0.5;--node-color:#73a7ff">
+                <div class="node-id"><span>S1</span><span>0.50</span></div>
+                <div class="node-trust"><div class="trust-rail"><span></span></div></div>
+                <div class="node-meta"><span>public slot</span><span>watch</span></div>
+              </div>
+              <div id="node-S2" class="node" style="--trust:0.5;--node-color:#73a7ff">
+                <div class="node-id"><span>S2</span><span>0.50</span></div>
+                <div class="node-trust"><div class="trust-rail"><span></span></div></div>
+                <div class="node-meta"><span>public slot</span><span>watch</span></div>
+              </div>
+              <div id="node-S3" class="node" style="--trust:0.5;--node-color:#73a7ff">
+                <div class="node-id"><span>S3</span><span>0.50</span></div>
+                <div class="node-trust"><div class="trust-rail"><span></span></div></div>
+                <div class="node-meta"><span>public slot</span><span>watch</span></div>
+              </div>
+              <div id="node-S4" class="node" style="--trust:0.5;--node-color:#73a7ff">
+                <div class="node-id"><span>S4</span><span>0.50</span></div>
+                <div class="node-trust"><div class="trust-rail"><span></span></div></div>
+                <div class="node-meta"><span>public slot</span><span>watch</span></div>
+              </div>
+            </div>
+
+            <div class="outcome-strip">
+              <div class="outcome">
+                <span>Recommended move</span>
+                <strong id="stageMove">delegate:S0</strong>
+              </div>
+              <div class="outcome">
+                <span>Adversarial signals</span>
+                <strong id="stageSignals">0 detected / 0 poison</strong>
+              </div>
+              <div class="outcome">
+                <span>Trust objective</span>
+                <strong>skill, not identity</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="command">
+        <div class="section-head">
+          <h2>Command Deck</h2>
+          <span id="sessionText" class="muted">No session</span>
+        </div>
+        <div class="body">
+          <div class="command-grid">
+            <div class="decision-card">
+              <div class="decision-title">
+                <strong>Route Decision</strong>
+                <span id="recommendChip" class="chip live">delegate:S0</span>
+              </div>
+              <select id="specialistSelect" aria-label="Specialist"></select>
+              <div class="recommendation">
+                <div id="recommendText" class="recommendation-output">Waiting for episode state.</div>
+                <button id="applyRecommendBtn" class="primary" type="button">Apply</button>
+              </div>
+            </div>
+
+            <div class="action-row">
+              <button id="delegateBtn" class="primary" type="button">Delegate</button>
+              <button id="verifyBtn" class="warn" type="button">Verify</button>
+              <button id="selfBtn" type="button">Self Solve</button>
+              <button id="skipBtn" class="danger" type="button">Skip</button>
+            </div>
+
+            <div class="button-row">
+              <button id="resetPanelBtn" type="button">New Seed Run</button>
+              <button id="swapPanelBtn" class="warn" type="button">Profile Swap</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="mission">
+        <div class="section-head">
+          <h2>Mission State</h2>
+          <div class="chips">
+            <span id="detectChip" class="chip live">0 detected</span>
+            <span id="poisonChip" class="chip warn">0 poison</span>
+          </div>
+        </div>
+        <div class="body">
+          <div class="stats-grid">
             <div class="stat">
               <div class="label">Score</div>
               <div id="scoreValue" class="value">0.000</div>
             </div>
             <div class="stat">
-              <div class="label">Step</div>
+              <div class="label">Step Budget</div>
               <div id="stepValue" class="value">0/45</div>
             </div>
             <div class="stat">
-              <div class="label">Complete</div>
+              <div class="label">Subtasks Done</div>
               <div id="completeValue" class="value">0/20</div>
             </div>
             <div class="stat">
@@ -638,161 +1130,100 @@
             </div>
           </div>
           <div class="progress"><span id="progressFill"></span></div>
+          <div class="risk-meter">
+            <div class="label">Risk gate</div>
+            <div class="risk-track"><span id="riskFill"></span></div>
+          </div>
           <div id="subtaskText" class="subtask">Reset an episode to begin.</div>
         </div>
       </section>
 
       <section class="trust">
         <div class="section-head">
-          <h2>Trust Ledger</h2>
-          <div class="chips">
-            <span id="detectChip" class="chip">0 detected</span>
-            <span id="poisonChip" class="chip warn">0 poison</span>
-          </div>
+          <h2>Bayesian Trust Ledger</h2>
+          <span id="trustMean" class="muted">mean 0.50</span>
         </div>
         <div class="body">
           <div id="trustList" class="trust-list"></div>
         </div>
       </section>
 
-      <section class="controls">
+      <section class="proof">
         <div class="section-head">
-          <h2>Actions</h2>
-          <div class="toolbar">
-            <select id="specialistSelect" aria-label="Specialist"></select>
-            <span id="recommendChip" class="chip">delegate:S0</span>
-          </div>
+          <h2>Reward Signal Proof</h2>
+          <span class="muted">random to heuristic to oracle-lite</span>
         </div>
         <div class="body">
-          <div class="control-grid">
-            <button id="delegateBtn" class="primary" type="button">Delegate</button>
-            <button id="verifyBtn" type="button">Verify</button>
-            <button id="selfBtn" type="button">Self Solve</button>
-            <button id="skipBtn" class="danger" type="button">Skip</button>
+          <div class="proof-grid">
+            <div class="baseline-table">
+              <div class="baseline-row">
+                <span>Random</span>
+                <div class="mini-bar"><span style="width:71.4%;background:#ff5f45"></span></div>
+                <strong>0.714</strong>
+              </div>
+              <div class="baseline-row">
+                <span>Heuristic</span>
+                <div class="mini-bar"><span style="width:81.6%;background:#73a7ff"></span></div>
+                <strong>0.816</strong>
+              </div>
+              <div class="baseline-row">
+                <span>Oracle-lite</span>
+                <div class="mini-bar"><span style="width:87.2%;background:#27e0a1"></span></div>
+                <strong>0.872</strong>
+              </div>
+              <div class="baseline-row">
+                <span>T3 detect</span>
+                <div class="mini-bar"><span style="width:73.5%;background:#f5ba41"></span></div>
+                <strong>0.735</strong>
+              </div>
+            </div>
+            <div class="chart-frame">
+              <img src="/assets/baseline_comparison.png" alt="SENTINEL baseline comparison chart">
+            </div>
           </div>
         </div>
       </section>
 
       <section class="events">
         <div class="section-head">
-          <h2>Episode Events</h2>
-          <span id="sessionText" class="muted">No session</span>
+          <h2>Flight Recorder</h2>
+          <span id="rewardText" class="muted">last reward 0.00</span>
         </div>
         <div class="body">
           <div id="eventList" class="event-list"></div>
         </div>
       </section>
 
-      <section class="metrics">
+      <section class="flow">
         <div class="section-head">
-          <h2>Baseline Proof</h2>
-          <span class="muted">20 episodes per task</span>
+          <h2>Code Flow</h2>
+          <span class="muted">reset, step, state</span>
         </div>
         <div class="body">
-          <div class="metric-grid">
-            <div class="stat">
-              <div class="label">Random</div>
-              <div class="value">0.714</div>
+          <div class="flow-line">
+            <div class="flow-step" data-num="1">
+              <strong>Reset</strong>
+              <span>environment.py samples scenario, resets graph, ledger, and specialist profile.</span>
             </div>
-            <div class="stat">
-              <div class="label">Heuristic</div>
-              <div class="value">0.816</div>
+            <div class="flow-step" data-num="2">
+              <strong>Observe</strong>
+              <span>agent sees subtask, stakes, trust snapshot, step budget, and public slots.</span>
             </div>
-            <div class="stat">
-              <div class="label">Oracle-lite</div>
-              <div class="value">0.872</div>
+            <div class="flow-step" data-num="3">
+              <strong>Act</strong>
+              <span>delegate, verify, self solve, or skip through the OpenEnv step API.</span>
             </div>
-          </div>
-          <div class="baseline-bars">
-            <div class="baseline-row">
-              <span>Random</span>
-              <div class="mini-bar"><span style="width:71.4%;background:#ef4444"></span></div>
-              <strong>0.714</strong>
+            <div class="flow-step" data-num="4">
+              <strong>Specialist</strong>
+              <span>scripted FSM returns outcome, confidence, cost, and adversarial flag.</span>
             </div>
-            <div class="baseline-row">
-              <span>Heuristic</span>
-              <div class="mini-bar"><span style="width:81.6%;background:#2563eb"></span></div>
-              <strong>0.816</strong>
+            <div class="flow-step" data-num="5">
+              <strong>Ledger</strong>
+              <span>trust_ledger.py updates public slot reliability from observed behavior.</span>
             </div>
-            <div class="baseline-row">
-              <span>Oracle-lite</span>
-              <div class="mini-bar"><span style="width:87.2%;background:#059669"></span></div>
-              <strong>0.872</strong>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="story">
-        <div class="section-head">
-          <h2>Before And After</h2>
-          <div class="chips">
-            <span class="chip fail">blind trust fails</span>
-            <span class="chip live">verification recovers</span>
-          </div>
-        </div>
-        <div class="body">
-          <div class="status-strip">
-            <div class="status-item">HF Space live</div>
-            <div class="status-item">OpenEnv validate green</div>
-            <div class="status-item">Docker build green</div>
-            <div class="status-item">Reward chart committed</div>
-          </div>
-          <div class="story-grid">
-            <div class="contrast before">
-              <div class="contrast-title">
-                <span>Before SENTINEL</span>
-                <span class="score-pill bad">T3 random 0.699</span>
-              </div>
-              <div class="flow">
-                <div class="flow-node">Uniform trust: S0-S4 all start at 0.50</div>
-                <div class="flow-node warn">High-stakes delegation can accept poisoned output</div>
-                <div class="flow-node warn">Downstream subtasks inherit corrupted state</div>
-                <div class="flow-node">Detection rate: 0.433</div>
-              </div>
-            </div>
-            <div class="bridge">
-              profile shuffle<br>
-              skill not memory
-            </div>
-            <div class="contrast after">
-              <div class="contrast-title">
-                <span>After SENTINEL Policy</span>
-                <span class="score-pill good">T3 oracle 0.895</span>
-              </div>
-              <div class="flow">
-                <div class="flow-node clean">Trust ledger moves after each behavioral outcome</div>
-                <div class="flow-node clean">High-stakes low-trust steps trigger verification</div>
-                <div class="flow-node clean">Adversarial attempts are blocked before cascade</div>
-                <div class="flow-node">Detection: heuristic 0.735, oracle 1.000</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="architecture">
-        <div class="section-head">
-          <h2>Architecture</h2>
-          <span class="muted">human-body model</span>
-        </div>
-        <div class="body">
-          <div class="role-grid">
-            <div class="role">
-              <strong>Brain</strong>
-              Orchestrator chooses delegate, verify, self solve, or skip.
-            </div>
-            <div class="role">
-              <strong>Heart</strong>
-              Environment owns reset, step, state, budget, and terminal scoring.
-            </div>
-            <div class="role">
-              <strong>Immune System</strong>
-              Trust ledger updates S0-S4 reliability from behavior.
-            </div>
-            <div class="role">
-              <strong>Pathogen</strong>
-              Adversarial specialist stays benign until high-stakes steps.
+            <div class="flow-step" data-num="6">
+              <strong>Reward</strong>
+              <span>graders.py scores completion, detection, calibration, and efficiency.</span>
             </div>
           </div>
         </div>
@@ -800,26 +1231,26 @@
 
       <section class="themes">
         <div class="section-head">
-          <h2>Theme Fit</h2>
-          <span class="muted">finale story map</span>
+          <h2>Hackathon Fit</h2>
+          <span class="muted">judge story map</span>
         </div>
         <div class="body">
           <div class="theme-grid">
             <div class="theme-card blue">
               <strong>Theme 1</strong>
-              Multi-agent orchestration with partial observability and adversarial dynamics.
+              <span>Orchestrator manages five partially observable actors under adversarial pressure.</span>
             </div>
             <div class="theme-card green">
               <strong>Theme 2</strong>
-              Long-horizon task graphs with delayed terminal reward and budget pressure.
+              <span>Long-horizon task graph with budget pressure, retries, and delayed terminal reward.</span>
             </div>
             <div class="theme-card amber">
               <strong>Theme 4</strong>
-              Profile reshuffle creates an auto-curriculum with no identity memorization.
+              <span>Profile shuffle creates an adaptive curriculum and blocks identity memorization.</span>
             </div>
             <div class="theme-card magenta">
-              <strong>Theme 5</strong>
-              Real AI systems problem: blind trust inside agent pipelines.
+              <strong>Wild Card</strong>
+              <span>Turns blind agent-to-agent trust into a trainable safety and oversight skill.</span>
             </div>
           </div>
         </div>
@@ -842,10 +1273,14 @@
       taskSelect: document.getElementById("taskSelect"),
       seedInput: document.getElementById("seedInput"),
       resetBtn: document.getElementById("resetBtn"),
+      resetPanelBtn: document.getElementById("resetPanelBtn"),
       swapBtn: document.getElementById("swapBtn"),
+      swapPanelBtn: document.getElementById("swapPanelBtn"),
       autoBtn: document.getElementById("autoBtn"),
       specialistSelect: document.getElementById("specialistSelect"),
       recommendChip: document.getElementById("recommendChip"),
+      recommendText: document.getElementById("recommendText"),
+      applyRecommendBtn: document.getElementById("applyRecommendBtn"),
       delegateBtn: document.getElementById("delegateBtn"),
       verifyBtn: document.getElementById("verifyBtn"),
       selfBtn: document.getElementById("selfBtn"),
@@ -857,19 +1292,32 @@
       completeValue: document.getElementById("completeValue"),
       stakesValue: document.getElementById("stakesValue"),
       progressFill: document.getElementById("progressFill"),
+      riskFill: document.getElementById("riskFill"),
       subtaskText: document.getElementById("subtaskText"),
       trustList: document.getElementById("trustList"),
+      trustMean: document.getElementById("trustMean"),
       detectChip: document.getElementById("detectChip"),
       poisonChip: document.getElementById("poisonChip"),
       sessionText: document.getElementById("sessionText"),
-      eventList: document.getElementById("eventList")
+      eventList: document.getElementById("eventList"),
+      leadMove: document.getElementById("leadMove"),
+      stageMove: document.getElementById("stageMove"),
+      stageSignals: document.getElementById("stageSignals"),
+      rewardText: document.getElementById("rewardText")
     };
 
     function trustColor(value) {
-      if (value >= 0.72) return "#059669";
-      if (value >= 0.48) return "#2563eb";
-      if (value >= 0.30) return "#b45309";
-      return "#dc2626";
+      if (value >= 0.72) return "#27e0a1";
+      if (value >= 0.48) return "#73a7ff";
+      if (value >= 0.30) return "#f5ba41";
+      return "#ff5f45";
+    }
+
+    function trustStatus(value) {
+      if (value >= 0.72) return "trusted";
+      if (value >= 0.48) return "watch";
+      if (value >= 0.30) return "risk";
+      return "quarantine";
     }
 
     function bestSpecialist() {
@@ -880,19 +1328,46 @@
         .sort((a, b) => (obs.trust_snapshot[b] ?? 0.5) - (obs.trust_snapshot[a] ?? 0.5))[0];
     }
 
+    function recommendedMove() {
+      const obs = state.observation;
+      if (!obs) return {type: "delegate", specialist: "S0", trust: 0.5};
+      const best = bestSpecialist();
+      const trust = obs.trust_snapshot[best] ?? 0.5;
+      const highStakes = obs.stakes_level >= 0.70;
+      if (highStakes && trust < 0.65) return {type: "verify", specialist: best, trust};
+      return {type: "delegate", specialist: best, trust};
+    }
+
     function renderTrust() {
       const trust = state.observation?.trust_snapshot || Object.fromEntries(ids.map(id => [id, 0.5]));
+      const values = ids.map(id => Number(trust[id] ?? 0.5));
+      const mean = values.reduce((sum, value) => sum + value, 0) / values.length;
+      el.trustMean.textContent = `mean ${mean.toFixed(2)}`;
+
       el.trustList.innerHTML = ids.map(id => {
         const value = Number(trust[id] ?? 0.5);
         const pct = Math.round(value * 100);
+        const color = trustColor(value);
         return `
           <div class="specialist">
             <div class="sid">${id}</div>
-            <div class="bar"><div class="fill" style="width:${pct}%;background:${trustColor(value)}"></div></div>
+            <div class="bar"><div class="fill" style="width:${pct}%;background:${color}"></div></div>
             <div class="score">${value.toFixed(2)}</div>
           </div>
         `;
       }).join("");
+
+      ids.forEach(id => {
+        const node = document.getElementById(`node-${id}`);
+        const value = Number(trust[id] ?? 0.5);
+        const status = trustStatus(value);
+        const active = id === bestSpecialist();
+        node.style.setProperty("--trust", value);
+        node.style.setProperty("--node-color", trustColor(value));
+        node.className = `node ${active ? "active" : ""} ${status === "risk" ? "watch" : ""} ${status === "quarantine" ? "quarantine" : ""}`;
+        node.querySelector(".node-id").innerHTML = `<span>${id}</span><span>${value.toFixed(2)}</span>`;
+        node.querySelector(".node-meta").innerHTML = `<span>public slot</span><span>${status}</span>`;
+      });
     }
 
     function renderSpecialists() {
@@ -907,13 +1382,37 @@
         el.eventList.innerHTML = `<div class="muted">No events yet.</div>`;
         return;
       }
-      el.eventList.innerHTML = state.events.slice(-16).reverse().map(item => `
+      el.eventList.innerHTML = state.events.slice(-18).reverse().map(item => `
         <div class="event">
           <strong>#${item.step}</strong>
           <div>${item.action}<br><span class="muted">${item.summary}</span></div>
           <div class="reward">${item.reward}</div>
         </div>
       `).join("");
+    }
+
+    function renderRecommendation() {
+      const move = recommendedMove();
+      const obs = state.observation;
+      const label = `${move.type}:${move.specialist}`;
+      const highStakes = Number(obs?.stakes_level ?? 0) >= 0.70;
+      el.recommendChip.textContent = label;
+      el.recommendChip.className = `chip ${move.type === "verify" ? "warn" : "live"}`;
+      el.stageMove.textContent = label;
+      el.leadMove.textContent = obs
+        ? `${move.type.toUpperCase()} ${move.specialist} at trust ${move.trust.toFixed(2)}`
+        : "Reset starts a fresh trust game.";
+      el.recommendText.textContent = highStakes
+        ? `High-stakes gate active. ${move.type === "verify" ? "Verify before accepting output." : "Best specialist is trusted enough to delegate."}`
+        : `Route to ${move.specialist}; keep budget for later high-stakes checks.`;
+    }
+
+    function setDisabled(disabled) {
+      el.delegateBtn.disabled = disabled;
+      el.verifyBtn.disabled = disabled;
+      el.selfBtn.disabled = disabled;
+      el.skipBtn.disabled = disabled;
+      el.applyRecommendBtn.disabled = disabled;
     }
 
     function render(result) {
@@ -926,6 +1425,8 @@
         renderTrust();
         renderSpecialists();
         renderEvents();
+        renderRecommendation();
+        setDisabled(true);
         return;
       }
 
@@ -933,6 +1434,9 @@
       const completed = obs.subtasks_total - obs.subtasks_remaining;
       const progress = obs.subtasks_total ? (completed / obs.subtasks_total) * 100 : 0;
       const status = state.done ? "DONE" : obs.episode_status.toUpperCase();
+      const detections = info.adversarial_detections ?? 0;
+      const poisonings = info.adversarial_poisonings ?? 0;
+      const lastReward = Number(result?.reward?.value ?? obs.last_reward ?? 0);
 
       el.statusChip.textContent = status;
       el.statusChip.className = `chip ${state.done ? "live" : "live"}`;
@@ -942,70 +1446,20 @@
       el.completeValue.textContent = `${completed}/${obs.subtasks_total}`;
       el.stakesValue.textContent = Number(obs.stakes_level).toFixed(2);
       el.progressFill.style.width = `${Math.max(0, Math.min(100, progress))}%`;
-      el.subtaskText.textContent = state.done ? "Episode complete." : obs.current_subtask;
-      el.sessionText.textContent = state.sessionId ? state.sessionId.slice(0, 8) : "No session";
-      el.detectChip.textContent = `${info.adversarial_detections ?? 0} detected`;
-      el.poisonChip.textContent = `${info.adversarial_poisonings ?? 0} poison`;
-      el.poisonChip.className = `chip ${(info.adversarial_poisonings ?? 0) > 0 ? "fail" : "warn"}`;
+      el.riskFill.style.width = `${Math.round(Number(obs.stakes_level || 0) * 100)}%`;
+      el.subtaskText.textContent = state.done ? "Episode complete. Swap profiles for the generalization demo." : obs.current_subtask;
+      el.sessionText.textContent = state.sessionId ? `session ${state.sessionId.slice(0, 8)}` : "No session";
+      el.detectChip.textContent = `${detections} detected`;
+      el.poisonChip.textContent = `${poisonings} poison`;
+      el.poisonChip.className = `chip ${poisonings > 0 ? "fail" : "warn"}`;
+      el.stageSignals.textContent = `${detections} detected / ${poisonings} poison`;
+      el.rewardText.textContent = `last reward ${lastReward.toFixed(2)}`;
 
       renderTrust();
       renderSpecialists();
       renderEvents();
       renderRecommendation();
       setDisabled(state.done || state.running);
-    }
-
-    function recommendedMove() {
-      const obs = state.observation;
-      if (!obs) return {type: "delegate", specialist: "S0"};
-      const best = bestSpecialist();
-      const trust = obs.trust_snapshot[best] ?? 0.5;
-      const highStakes = obs.stakes_level >= 0.70;
-      if (highStakes && trust < 0.65) return {type: "verify", specialist: best};
-      return {type: "delegate", specialist: best};
-    }
-
-    function renderRecommendation() {
-      if (!el.recommendChip) return;
-      const move = recommendedMove();
-      const label = `${move.type}:${move.specialist}`;
-      el.recommendChip.textContent = label;
-      el.recommendChip.className = `chip ${move.type === "verify" ? "warn" : "live"}`;
-    }
-
-    function setDisabled(disabled) {
-      el.delegateBtn.disabled = disabled;
-      el.verifyBtn.disabled = disabled;
-      el.selfBtn.disabled = disabled;
-      el.skipBtn.disabled = disabled;
-    }
-
-    async function resetEpisode() {
-      state.running = true;
-      el.resetBtn.disabled = true;
-      try {
-        const seed = Number(el.seedInput.value || 0);
-        const response = await fetch("/reset", {
-          method: "POST",
-          headers: {"Content-Type": "application/json"},
-          body: JSON.stringify({task_type: el.taskSelect.value, seed})
-        });
-        const result = await response.json();
-        if (!response.ok) throw new Error(result.detail || "reset failed");
-        state.taskType = result.observation.task_type;
-        state.sessionId = result.info.session_id;
-        state.events = [];
-        state.done = false;
-        addEvent(0, "reset", "Episode initialized.", "0.00");
-        render(result);
-      } catch (error) {
-        addEvent(0, "error", error.message, "0.00");
-        renderEvents();
-      } finally {
-        state.running = false;
-        el.resetBtn.disabled = false;
-        setDisabled(state.done);
-      }
     }
 
     function addEvent(step, action, summary, reward) {
@@ -1022,6 +1476,36 @@
         subtask_response: type === "solve_independently" ? "SELF_SOLVED" : null,
         reasoning: `ui-${type}${specialist ? "-" + specialist : ""}`
       };
+    }
+
+    async function resetEpisode() {
+      state.running = true;
+      el.resetBtn.disabled = true;
+      el.resetPanelBtn.disabled = true;
+      try {
+        const seed = Number(el.seedInput.value || 0);
+        const response = await fetch("/reset", {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({task_type: el.taskSelect.value, seed})
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.detail || "reset failed");
+        state.taskType = result.observation.task_type;
+        state.sessionId = result.info.session_id;
+        state.events = [];
+        state.done = false;
+        addEvent(0, "reset", "Episode initialized with shuffled hidden profiles.", "0.00");
+        render(result);
+      } catch (error) {
+        addEvent(0, "error", error.message, "0.00");
+        renderEvents();
+      } finally {
+        state.running = false;
+        el.resetBtn.disabled = false;
+        el.resetPanelBtn.disabled = false;
+        setDisabled(state.done);
+      }
     }
 
     async function stepEpisode(type, specialist = null) {
@@ -1054,12 +1538,17 @@
     async function autoRun() {
       if (!state.observation || state.done) await resetEpisode();
       let guard = 0;
-      while (!state.done && guard < 60) {
+      while (!state.done && guard < 70) {
         const move = recommendedMove();
         await stepEpisode(move.type, move.specialist);
         guard += 1;
-        await new Promise(resolve => setTimeout(resolve, 180));
+        await new Promise(resolve => setTimeout(resolve, 150));
       }
+    }
+
+    async function applyRecommendation() {
+      const move = recommendedMove();
+      await stepEpisode(move.type, move.specialist);
     }
 
     async function swapProfiles() {
@@ -1069,12 +1558,15 @@
     }
 
     el.resetBtn.addEventListener("click", resetEpisode);
+    el.resetPanelBtn.addEventListener("click", resetEpisode);
     el.swapBtn.addEventListener("click", swapProfiles);
+    el.swapPanelBtn.addEventListener("click", swapProfiles);
     el.delegateBtn.addEventListener("click", () => stepEpisode("delegate"));
     el.verifyBtn.addEventListener("click", () => stepEpisode("verify"));
     el.selfBtn.addEventListener("click", () => stepEpisode("solve_independently"));
     el.skipBtn.addEventListener("click", () => stepEpisode("skip"));
     el.autoBtn.addEventListener("click", autoRun);
+    el.applyRecommendBtn.addEventListener("click", applyRecommendation);
 
     render();
     resetEpisode();

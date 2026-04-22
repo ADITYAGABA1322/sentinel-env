@@ -90,21 +90,23 @@ curl http://localhost:7860/schema
 
 The root route `/` serves the live SENTINEL dashboard on Hugging Face Spaces.
 Use `/api` for the JSON route index.
+Use `/assets/baseline_comparison.png` for the committed baseline chart used in the dashboard.
 
 ## Live Dashboard
 
-The Space opens directly into a judge-demo dashboard:
+The Space opens directly into **SENTINEL Trust Mission Control**, a judge-demo dashboard:
 
 - live task progress and score
-- S0-S4 trust ledger bars
+- S0-S4 network theater with trust state per public slot
 - manual `delegate`, `verify`, `solve_independently`, and `skip` controls
-- heuristic auto-run
+- heuristic auto-policy and one-click recommended move
 - profile reshuffle demo via seed swap
-- before/after failure contrast
-- human-body architecture map
+- risk gate for high-stakes subtasks
+- flight recorder of step rewards and decisions
+- code-flow map from `reset()` to reward
 - hackathon theme coverage map
 - adversarial detection and poisoning counters
-- baseline proof table for random, heuristic, and oracle-lite policies
+- baseline proof table and chart for random, heuristic, and oracle-lite policies
 
 Current status as of April 22, 2026:
 
