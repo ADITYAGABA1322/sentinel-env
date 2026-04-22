@@ -99,8 +99,24 @@ The Space opens directly into a judge-demo dashboard:
 - S0-S4 trust ledger bars
 - manual `delegate`, `verify`, `solve_independently`, and `skip` controls
 - heuristic auto-run
+- profile reshuffle demo via seed swap
+- before/after failure contrast
+- human-body architecture map
+- hackathon theme coverage map
 - adversarial detection and poisoning counters
 - baseline proof table for random, heuristic, and oracle-lite policies
+
+Current status as of April 22, 2026:
+
+| Requirement | Status |
+| --- | --- |
+| Hugging Face Space | Live |
+| Docker build | Passing |
+| OpenEnv validation | Passing |
+| Baseline chart | Committed |
+| Live trust UI | Deployed |
+| Mini-blog/video | Still required before finale |
+| Onsite GRPO curve | Still required during finale |
 
 Start an episode:
 

@@ -101,7 +101,9 @@
       grid-template-areas:
         "mission trust"
         "controls trust"
-        "events metrics";
+        "events metrics"
+        "story story"
+        "architecture themes";
       align-items: start;
       max-width: 1480px;
       width: 100%;
@@ -138,6 +140,9 @@
     .trust { grid-area: trust; }
     .events { grid-area: events; }
     .metrics { grid-area: metrics; }
+    .story { grid-area: story; }
+    .architecture { grid-area: architecture; }
+    .themes { grid-area: themes; }
 
     .body {
       padding: 16px;
@@ -366,6 +371,133 @@
       gap: 10px;
     }
 
+    .story-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 72px minmax(0, 1fr);
+      gap: 14px;
+      align-items: stretch;
+    }
+
+    .contrast {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+      background: #fbfcfe;
+    }
+
+    .contrast.before {
+      border-color: #fecaca;
+      background: #fff7f7;
+    }
+
+    .contrast.after {
+      border-color: #a7f3d0;
+      background: #f0fdf9;
+    }
+
+    .contrast-title {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      font-weight: 780;
+      margin-bottom: 12px;
+      color: #111827;
+    }
+
+    .score-pill {
+      border-radius: 999px;
+      padding: 5px 9px;
+      font-size: 12px;
+      font-weight: 800;
+      color: #fff;
+      background: #475569;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .score-pill.bad { background: var(--red); }
+    .score-pill.good { background: var(--accent); }
+
+    .flow {
+      display: grid;
+      gap: 8px;
+    }
+
+    .flow-node {
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #fff;
+      padding: 10px;
+      line-height: 1.35;
+      min-height: 48px;
+    }
+
+    .before .flow-node.warn {
+      border-color: #fca5a5;
+      color: #7f1d1d;
+      background: #fff1f2;
+    }
+
+    .after .flow-node.clean {
+      border-color: #86efac;
+      color: #064e3b;
+      background: #ecfdf3;
+    }
+
+    .bridge {
+      display: grid;
+      place-items: center;
+      min-height: 100%;
+      color: #64748b;
+      font-size: 12px;
+      text-align: center;
+      line-height: 1.35;
+      border-left: 1px dashed #94a3b8;
+      border-right: 1px dashed #94a3b8;
+    }
+
+    .role-grid, .theme-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .role, .theme-card {
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 12px;
+      background: #fbfcfe;
+      min-height: 88px;
+    }
+
+    .role strong, .theme-card strong {
+      display: block;
+      margin-bottom: 6px;
+      color: #111827;
+    }
+
+    .theme-card.blue { border-color: #bfdbfe; background: #eff6ff; }
+    .theme-card.green { border-color: #bbf7d0; background: #f0fdf4; }
+    .theme-card.amber { border-color: #fde68a; background: #fffbeb; }
+    .theme-card.magenta { border-color: #fbcfe8; background: #fdf2f8; }
+
+    .status-strip {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .status-item {
+      border: 1px solid #bbf7d0;
+      background: #f0fdf4;
+      color: #065f46;
+      border-radius: 7px;
+      padding: 10px 12px;
+      font-size: 13px;
+      font-weight: 720;
+    }
+
     .baseline-bars {
       margin-top: 14px;
       display: grid;
@@ -410,17 +542,32 @@
           "trust"
           "controls"
           "metrics"
-          "events";
+          "events"
+          "story"
+          "architecture"
+          "themes";
         padding: 14px;
       }
 
-      .grid, .control-grid, .metric-grid {
+      .grid, .control-grid, .metric-grid, .role-grid, .theme-grid, .status-strip {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .story-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .bridge {
+        min-height: 58px;
+        border-left: 0;
+        border-right: 0;
+        border-top: 1px dashed #94a3b8;
+        border-bottom: 1px dashed #94a3b8;
       }
     }
 
     @media (max-width: 560px) {
-      .grid, .control-grid, .metric-grid {
+      .grid, .control-grid, .metric-grid, .role-grid, .theme-grid, .status-strip {
         grid-template-columns: 1fr;
       }
 
@@ -457,6 +604,7 @@
         </select>
         <input id="seedInput" aria-label="Seed" type="number" value="42">
         <button id="resetBtn" class="primary" type="button">Reset</button>
+        <button id="swapBtn" type="button">Swap Profiles</button>
         <button id="autoBtn" type="button">Auto Run</button>
       </div>
     </header>
@@ -512,6 +660,7 @@
           <h2>Actions</h2>
           <div class="toolbar">
             <select id="specialistSelect" aria-label="Specialist"></select>
+            <span id="recommendChip" class="chip">delegate:S0</span>
           </div>
         </div>
         <div class="body">
@@ -573,6 +722,108 @@
           </div>
         </div>
       </section>
+
+      <section class="story">
+        <div class="section-head">
+          <h2>Before And After</h2>
+          <div class="chips">
+            <span class="chip fail">blind trust fails</span>
+            <span class="chip live">verification recovers</span>
+          </div>
+        </div>
+        <div class="body">
+          <div class="status-strip">
+            <div class="status-item">HF Space live</div>
+            <div class="status-item">OpenEnv validate green</div>
+            <div class="status-item">Docker build green</div>
+            <div class="status-item">Reward chart committed</div>
+          </div>
+          <div class="story-grid">
+            <div class="contrast before">
+              <div class="contrast-title">
+                <span>Before SENTINEL</span>
+                <span class="score-pill bad">T3 random 0.699</span>
+              </div>
+              <div class="flow">
+                <div class="flow-node">Uniform trust: S0-S4 all start at 0.50</div>
+                <div class="flow-node warn">High-stakes delegation can accept poisoned output</div>
+                <div class="flow-node warn">Downstream subtasks inherit corrupted state</div>
+                <div class="flow-node">Detection rate: 0.433</div>
+              </div>
+            </div>
+            <div class="bridge">
+              profile shuffle<br>
+              skill not memory
+            </div>
+            <div class="contrast after">
+              <div class="contrast-title">
+                <span>After SENTINEL Policy</span>
+                <span class="score-pill good">T3 oracle 0.895</span>
+              </div>
+              <div class="flow">
+                <div class="flow-node clean">Trust ledger moves after each behavioral outcome</div>
+                <div class="flow-node clean">High-stakes low-trust steps trigger verification</div>
+                <div class="flow-node clean">Adversarial attempts are blocked before cascade</div>
+                <div class="flow-node">Detection: heuristic 0.735, oracle 1.000</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="architecture">
+        <div class="section-head">
+          <h2>Architecture</h2>
+          <span class="muted">human-body model</span>
+        </div>
+        <div class="body">
+          <div class="role-grid">
+            <div class="role">
+              <strong>Brain</strong>
+              Orchestrator chooses delegate, verify, self solve, or skip.
+            </div>
+            <div class="role">
+              <strong>Heart</strong>
+              Environment owns reset, step, state, budget, and terminal scoring.
+            </div>
+            <div class="role">
+              <strong>Immune System</strong>
+              Trust ledger updates S0-S4 reliability from behavior.
+            </div>
+            <div class="role">
+              <strong>Pathogen</strong>
+              Adversarial specialist stays benign until high-stakes steps.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="themes">
+        <div class="section-head">
+          <h2>Theme Fit</h2>
+          <span class="muted">finale story map</span>
+        </div>
+        <div class="body">
+          <div class="theme-grid">
+            <div class="theme-card blue">
+              <strong>Theme 1</strong>
+              Multi-agent orchestration with partial observability and adversarial dynamics.
+            </div>
+            <div class="theme-card green">
+              <strong>Theme 2</strong>
+              Long-horizon task graphs with delayed terminal reward and budget pressure.
+            </div>
+            <div class="theme-card amber">
+              <strong>Theme 4</strong>
+              Profile reshuffle creates an auto-curriculum with no identity memorization.
+            </div>
+            <div class="theme-card magenta">
+              <strong>Theme 5</strong>
+              Real AI systems problem: blind trust inside agent pipelines.
+            </div>
+          </div>
+        </div>
+      </section>
     </main>
   </div>
 
@@ -591,8 +842,10 @@
       taskSelect: document.getElementById("taskSelect"),
       seedInput: document.getElementById("seedInput"),
       resetBtn: document.getElementById("resetBtn"),
+      swapBtn: document.getElementById("swapBtn"),
       autoBtn: document.getElementById("autoBtn"),
       specialistSelect: document.getElementById("specialistSelect"),
+      recommendChip: document.getElementById("recommendChip"),
       delegateBtn: document.getElementById("delegateBtn"),
       verifyBtn: document.getElementById("verifyBtn"),
       selfBtn: document.getElementById("selfBtn"),
@@ -698,7 +951,26 @@
       renderTrust();
       renderSpecialists();
       renderEvents();
+      renderRecommendation();
       setDisabled(state.done || state.running);
+    }
+
+    function recommendedMove() {
+      const obs = state.observation;
+      if (!obs) return {type: "delegate", specialist: "S0"};
+      const best = bestSpecialist();
+      const trust = obs.trust_snapshot[best] ?? 0.5;
+      const highStakes = obs.stakes_level >= 0.70;
+      if (highStakes && trust < 0.65) return {type: "verify", specialist: best};
+      return {type: "delegate", specialist: best};
+    }
+
+    function renderRecommendation() {
+      if (!el.recommendChip) return;
+      const move = recommendedMove();
+      const label = `${move.type}:${move.specialist}`;
+      el.recommendChip.textContent = label;
+      el.recommendChip.className = `chip ${move.type === "verify" ? "warn" : "live"}`;
     }
 
     function setDisabled(disabled) {
@@ -783,17 +1055,21 @@
       if (!state.observation || state.done) await resetEpisode();
       let guard = 0;
       while (!state.done && guard < 60) {
-        const obs = state.observation;
-        const best = bestSpecialist();
-        const trust = obs.trust_snapshot[best] ?? 0.5;
-        const type = obs.stakes_level >= 0.70 && trust < 0.65 ? "verify" : "delegate";
-        await stepEpisode(type, best);
+        const move = recommendedMove();
+        await stepEpisode(move.type, move.specialist);
         guard += 1;
         await new Promise(resolve => setTimeout(resolve, 180));
       }
     }
 
+    async function swapProfiles() {
+      const nextSeed = Number(el.seedInput.value || 0) + 1;
+      el.seedInput.value = String(nextSeed);
+      await resetEpisode();
+    }
+
     el.resetBtn.addEventListener("click", resetEpisode);
+    el.swapBtn.addEventListener("click", swapProfiles);
     el.delegateBtn.addEventListener("click", () => stepEpisode("delegate"));
     el.verifyBtn.addEventListener("click", () => stepEpisode("verify"));
     el.selfBtn.addEventListener("click", () => stepEpisode("solve_independently"));
