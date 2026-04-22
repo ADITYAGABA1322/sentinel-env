@@ -59,6 +59,19 @@ def health():
     return {"status": "ok", "environment": "sentinel-env", "version": "1.0.0"}
 
 
+@app.get("/")
+def root():
+    return {
+        "name": "sentinel-env",
+        "status": "ok",
+        "summary": (
+            "SENTINEL trains an orchestrator to calibrate trust, verify risky "
+            "outputs, recover from failures, and finish long multi-agent tasks."
+        ),
+        "routes": ["/health", "/metadata", "/tasks", "/schema", "/grader", "/reset", "/step", "/state"],
+    }
+
+
 @app.get("/metadata")
 def metadata():
     summary = scenario_summary()

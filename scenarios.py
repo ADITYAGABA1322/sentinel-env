@@ -205,9 +205,10 @@ def _generate_scenarios(
     layout: list[tuple],
     count: int = 40,
 ) -> list[Scenario]:
+    stable_offsets = {"task1": 101, "task2": 202, "task3": 303}
     scenarios = []
     for i in range(count):
-        jittered = _jitter_stakes(layout, seed=i * 100 + hash(task_type) % 1000)
+        jittered = _jitter_stakes(layout, seed=i * 100 + stable_offsets[task_type])
         sid = f"SCN-{task_type.upper()}-{i+1:03d}"
         scenarios.append(
             _build_scenario(sid, task_type, jittered, f"#{i+1:03d}")

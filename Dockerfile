@@ -14,9 +14,13 @@ COPY graders.py .
 COPY specialists.py .
 COPY trust_ledger.py .
 COPY task_graph.py .
+COPY comms_bus.py .
 COPY scenarios.py .
 COPY openenv.yaml .
 COPY inference.py .
+COPY README.md .
+COPY pyproject.toml .
+COPY server ./server
 
 # Create outputs directory for baseline scores
 RUN mkdir -p outputs

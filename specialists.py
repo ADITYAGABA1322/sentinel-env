@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import random
 from dataclasses import dataclass, field
-from typing import Protocol
 
 
 # ---------------------------------------------------------------------------
@@ -105,9 +104,10 @@ class DomainBoundSpecialist(BaseSpecialist):
         pass
 
     def execute(self, subtask: str, stakes: float, rng: random.Random) -> SpecialistResult:
-        # Domain is inferred from subtask text (keywords signal domain)
+        # SENTINEL's abstract scenarios expose domain through task wording.
+        # This specialist is strong at analysis/verification and weak elsewhere.
         in_domain = any(kw in subtask.lower() for kw in
-                        ["classify", "categorize", "label", "triage", "assess"])
+                        ["analyze", "analysis", "identify", "pattern", "verify", "correctness", "assess"])
         accuracy = self.IN_DOMAIN_ACCURACY if in_domain else self.OUT_DOMAIN_ACCURACY
         correct  = rng.random() < accuracy
         return SpecialistResult(
@@ -273,3 +273,17 @@ class SpecialistPool:
 
     def available_ids(self) -> list[str]:
         return list(self._profile.keys())
+
+    def internal_profile(self) -> dict[str, str]:
+        """Public specialist id -> hidden internal behavior id."""
+        return dict(self._profile)
+
+    def public_ground_truth_reliability(self, internal_reliability: dict[str, float]) -> dict[str, float]:
+        """
+        Map hidden internal behavior reliabilities onto public slots.
+        The reward engine uses this; the orchestrator never sees it.
+        """
+        return {
+            public_id: internal_reliability.get(internal_id, 0.5)
+            for public_id, internal_id in self._profile.items()
+        }

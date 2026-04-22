@@ -60,6 +60,7 @@ class SentinelEnv:
         self.step_count: int = 0
         self.max_steps: int = 0
         self.total_reward: float = 0.0
+        self.reward_events: int = 0
         self.last_reward: float = 0.0
         self.done: bool = False
         self.episode_status: str = "active"
@@ -96,6 +97,7 @@ class SentinelEnv:
         self.step_count       = 0
         self.max_steps        = MAX_STEPS[scenario["task_type"]]
         self.total_reward     = 0.0
+        self.reward_events    = 0
         self.last_reward      = 0.0
         self.done             = False
         self.episode_status   = "active"
@@ -149,7 +151,7 @@ class SentinelEnv:
         subtask  = node.subtask
         stakes   = subtask["stakes"]
 
-        self.step_count += 1
+        step_cost = 1
 
         # --- Execute specialist or self-solve ---
         if action_type == "skip":
@@ -160,8 +162,8 @@ class SentinelEnv:
 
         elif action_type == "solve_independently":
             # Agent solves itself — always correct (no specialist involved)
-            # But costs 2 steps (enforced via max_steps budget pressure)
-            self.step_count += 1   # extra step cost
+            # But costs 2 steps (enforced via max_steps budget pressure).
+            step_cost       = 2
             outcome         = 1.0
             was_adversarial = False
             self._graph.record_outcome(subtask["id"], outcome, "SELF")
@@ -170,7 +172,7 @@ class SentinelEnv:
         elif action_type == "verify":
             # First get result, then verify (costs +1 step)
             result = self._pool.execute(specialist_id, subtask["description"], stakes, self._rng)
-            self.step_count += 1   # verification step cost
+            step_cost       = int(result.metadata.get("step_cost", 1)) + 1
             outcome         = result.outcome if not result.is_adversarial else 0.0
             was_adversarial  = result.is_adversarial
             # Verification means agent caught adversarial — treat as detection
@@ -182,11 +184,14 @@ class SentinelEnv:
 
         else:  # delegate
             result          = self._pool.execute(specialist_id, subtask["description"], stakes, self._rng)
+            step_cost       = int(result.metadata.get("step_cost", 1))
             was_adversarial  = result.is_adversarial
             outcome         = 0.0 if was_adversarial else result.outcome
             self._graph.record_outcome(subtask["id"], outcome, specialist_id, was_adversarial)
             self._ledger.update(specialist_id, result.outcome, stakes)
             self.last_action_summary = f"Delegated to {specialist_id} on {subtask['id']}"
+
+        self.step_count += max(1, step_cost)
 
         # --- Grade this step ---
         reward_value, reason, breakdown = self._grade_step(
@@ -196,6 +201,7 @@ class SentinelEnv:
 
         self.last_reward   = reward_value
         self.total_reward += reward_value
+        self.reward_events += 1
 
         # --- Check episode end ---
         all_done    = self._graph.is_done()
@@ -226,6 +232,7 @@ class SentinelEnv:
             "step_count":             self.step_count,
             "max_steps":              self.max_steps,
             "total_reward":           round(self.total_reward, 4),
+            "score":                  round(self.normalized_score(), 4),
             "done":                   self.done,
             "scenario_id":            self.current_scenario["scenario_id"],
             "task_type":              self.current_scenario["task_type"],
@@ -301,11 +308,11 @@ class SentinelEnv:
                 terminal_breakdown = {"completion_rate": round(completion, 3)}
         elif task_type == "task2":
             terminal_value, terminal_reason, terminal_breakdown = grade_task2_terminal(
-                self._graph, self._ledger, _GROUND_TRUTH_RELIABILITY
+                self._graph, self._ledger, self._public_ground_truth_reliability()
             )
         else:
             terminal_value, terminal_reason, terminal_breakdown = grade_task3_terminal(
-                self._graph, self._ledger, _GROUND_TRUTH_RELIABILITY,
+                self._graph, self._ledger, self._public_ground_truth_reliability(),
                 self.step_count, self.max_steps,
             )
 
@@ -315,6 +322,7 @@ class SentinelEnv:
 
         self.last_reward    = terminal_value
         self.total_reward  += terminal_value
+        self.reward_events += 1
         self.done           = True
         self.episode_status = "failed" if forced_end else "completed"
 
@@ -337,6 +345,9 @@ class SentinelEnv:
         extra_info: dict | None = None,
     ) -> dict:
         node = self._graph.current_node() if self._graph and not done else None
+        subtask_index = self._graph.node_index(node.subtask["id"]) if node else (
+            self._graph.subtasks_total() if self._graph else 0
+        )
 
         obs = {
             "session_id":            self.session_id,
@@ -345,7 +356,7 @@ class SentinelEnv:
             "difficulty":            self._difficulty(),
             "task_description":      self.current_scenario["description"] if self.current_scenario else "",
             "current_subtask":       node.subtask["description"] if node else "All subtasks complete.",
-            "subtask_index":         node.subtask["id"] if node else "DONE",
+            "subtask_index":         subtask_index,
             "subtasks_total":        self._graph.subtasks_total() if self._graph else 0,
             "subtasks_remaining":    self._graph.subtasks_remaining() if self._graph else 0,
             "available_specialists": self._pool.available_ids(),
@@ -370,6 +381,7 @@ class SentinelEnv:
             "step_count":   self.step_count,
             "max_steps":    self.max_steps,
             "total_reward": round(self.total_reward, 4),
+            "score":        round(self.normalized_score(), 4),
         }
         if extra_info:
             info.update(extra_info)
@@ -380,3 +392,12 @@ class SentinelEnv:
         return {"task1": "easy", "task2": "medium", "task3": "hard"}.get(
             self.current_scenario["task_type"] if self.current_scenario else "task3", "hard"
         )
+
+    def normalized_score(self) -> float:
+        """Episode score normalized to 0.0-1.0 for judging logs."""
+        if self.reward_events <= 0:
+            return 0.0
+        return max(0.0, min(1.0, self.total_reward / self.reward_events))
+
+    def _public_ground_truth_reliability(self) -> dict[str, float]:
+        return self._pool.public_ground_truth_reliability(_GROUND_TRUTH_RELIABILITY)
