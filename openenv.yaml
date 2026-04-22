@@ -23,7 +23,7 @@ description: >
   transferable skill, not memorized identities.
 
 api:
-  base_url: http://0.0.0.0:7860
+  base_url: https://xcodeaddy-sentinel-env.hf.space
   endpoints:
     health:
       method: GET
@@ -140,9 +140,10 @@ baseline:
   script: inference.py
   required_env_vars: [API_BASE_URL, MODEL_NAME, HF_TOKEN]
   optional_env_vars: [ENV_URL]
-  latest_local_score: 0.7942
-  latest_local_episodes: 30
+  latest_local_score: 0.8162
+  latest_local_episodes: 60
+  comparison_artifact: outputs/baseline_comparison.png
   reproducibility:
     inference_temperature: 0.0
     agent: heuristic-trust-weighted
-    dataset_order: fixed SCN-TASK*-001 through SCN-TASK*-010 per task
+    dataset_order: fixed SCN-TASK*-001 through SCN-TASK*-020 per task
