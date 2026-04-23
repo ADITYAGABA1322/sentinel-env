@@ -1247,6 +1247,404 @@
       background: var(--magenta-soft);
     }
 
+    /* Phase 4 visual system rebuild: calmer glass surfaces, cleaner hierarchy,
+       and per-mode layouts so the page feels like a product instead of one giant board. */
+    :root {
+      --bg: #060912;
+      --panel: rgba(15, 19, 30, 0.72);
+      --panel-2: rgba(20, 25, 39, 0.68);
+      --panel-3: rgba(26, 31, 47, 0.66);
+      --ink: #f4f7ff;
+      --muted: #a4aec4;
+      --faint: #71809f;
+      --line: rgba(255, 255, 255, 0.1);
+      --jade: #63dfc0;
+      --jade-soft: rgba(99, 223, 192, 0.14);
+      --amber: #ffbf7d;
+      --amber-soft: rgba(255, 191, 125, 0.14);
+      --flame: #ff8d93;
+      --flame-soft: rgba(255, 141, 147, 0.14);
+      --blue: #8eb5ff;
+      --blue-soft: rgba(142, 181, 255, 0.14);
+      --magenta: #c5a3ff;
+      --magenta-soft: rgba(197, 163, 255, 0.14);
+      --cream: #f7f9ff;
+      --shadow: 0 24px 60px rgba(3, 8, 20, 0.36);
+    }
+
+    html {
+      background: var(--bg);
+    }
+
+    body {
+      background:
+        radial-gradient(circle at 12% 0%, rgba(142, 181, 255, 0.18), transparent 24%),
+        radial-gradient(circle at 88% 8%, rgba(197, 163, 255, 0.14), transparent 22%),
+        radial-gradient(circle at 60% 100%, rgba(99, 223, 192, 0.08), transparent 22%),
+        linear-gradient(180deg, #05070d 0%, #0a0d15 46%, #070a12 100%);
+      background-attachment: fixed;
+      color: var(--ink);
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(rgba(255, 255, 255, 0.022) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px);
+      background-size: 42px 42px;
+      mask-image: radial-gradient(circle at center, black 35%, transparent 82%);
+      opacity: 0.34;
+    }
+
+    header,
+    .modebar {
+      background: rgba(8, 11, 19, 0.72);
+      border-color: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(24px) saturate(1.3);
+    }
+
+    .brand {
+      gap: 16px;
+    }
+
+    .mark {
+      border-color: rgba(255, 255, 255, 0.12);
+      background:
+        radial-gradient(circle at 30% 28%, rgba(142, 181, 255, 0.45), transparent 58%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02)),
+        rgba(17, 22, 34, 0.82);
+      color: #eef4ff;
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.18),
+        0 12px 34px rgba(5, 10, 22, 0.34);
+    }
+
+    h1 {
+      font-size: 22px;
+      color: #f7faff;
+    }
+
+    .subhead,
+    .view-copy,
+    .muted,
+    .label,
+    .node-copy,
+    .playground-card span,
+    .theme-card span,
+    .readiness-item span,
+    .flow-step span {
+      color: var(--muted);
+    }
+
+    button,
+    select,
+    input,
+    .view-tab {
+      border-color: rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.045);
+      color: var(--ink);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    }
+
+    button:hover,
+    .view-tab:hover {
+      border-color: rgba(255, 255, 255, 0.16);
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    button.primary,
+    .view-tab.active {
+      border-color: rgba(142, 181, 255, 0.38);
+      background:
+        linear-gradient(180deg, rgba(142, 181, 255, 0.22), rgba(142, 181, 255, 0.1)),
+        rgba(255, 255, 255, 0.05);
+      color: #f3f8ff;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    }
+
+    button.warn {
+      border-color: rgba(255, 191, 125, 0.32);
+      background:
+        linear-gradient(180deg, rgba(255, 191, 125, 0.2), rgba(255, 191, 125, 0.08)),
+        rgba(255, 255, 255, 0.04);
+      color: #fff1e0;
+    }
+
+    button.danger {
+      border-color: rgba(255, 141, 147, 0.3);
+      background:
+        linear-gradient(180deg, rgba(255, 141, 147, 0.2), rgba(255, 141, 147, 0.08)),
+        rgba(255, 255, 255, 0.04);
+      color: #ffe9eb;
+    }
+
+    .console {
+      width: min(1480px, 100%);
+      gap: 16px;
+    }
+
+    .console[data-view="overview"] {
+      grid-template-columns: minmax(420px, 1.02fr) minmax(360px, 0.98fr);
+      grid-template-areas:
+        "hero hero"
+        "story proof"
+        "flow themes"
+        "readiness readiness";
+    }
+
+    .console[data-view="playground"] {
+      grid-template-columns: minmax(520px, 1.24fr) minmax(360px, 0.76fr);
+      grid-template-areas:
+        "theater command"
+        "mission playground"
+        "trust playground"
+        "events playground";
+    }
+
+    .console[data-view="judge"] {
+      grid-template-columns: minmax(500px, 1.05fr) minmax(360px, 0.95fr);
+      grid-template-areas:
+        "hero hero"
+        "story proof"
+        "theater judge"
+        "mission judge";
+    }
+
+    section,
+    .hero-panel,
+    .decision-card,
+    .stat,
+    .playground-card,
+    .json-panel,
+    .story-lane,
+    .judge-card,
+    .readiness-item,
+    .event,
+    .flow-step,
+    .theme-card,
+    .node,
+    .outcome,
+    .stage-label {
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02)),
+        var(--panel);
+      border-color: rgba(255, 255, 255, 0.1);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.05),
+        0 18px 50px rgba(3, 8, 20, 0.22);
+      backdrop-filter: blur(22px) saturate(1.3);
+    }
+
+    .section-head,
+    .json-head {
+      background: rgba(255, 255, 255, 0.025);
+      border-bottom-color: rgba(255, 255, 255, 0.07);
+    }
+
+    h2 {
+      color: rgba(247, 249, 255, 0.84);
+      letter-spacing: 0.08em;
+    }
+
+    .chip {
+      border-color: rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.055);
+      color: #dde5f6;
+    }
+
+    .chip.live {
+      border-color: rgba(142, 181, 255, 0.24);
+      color: #dbe8ff;
+      background: rgba(142, 181, 255, 0.12);
+    }
+
+    .chip.warn {
+      border-color: rgba(255, 191, 125, 0.22);
+      color: #ffe7c8;
+      background: rgba(255, 191, 125, 0.12);
+    }
+
+    .chip.fail {
+      border-color: rgba(255, 141, 147, 0.22);
+      color: #ffd7da;
+      background: rgba(255, 141, 147, 0.12);
+    }
+
+    .stage {
+      border-color: rgba(255, 255, 255, 0.11);
+      background:
+        radial-gradient(circle at 50% 12%, rgba(142, 181, 255, 0.22), transparent 18%),
+        radial-gradient(circle at 82% 82%, rgba(197, 163, 255, 0.18), transparent 18%),
+        linear-gradient(rgba(255, 255, 255, 0.018) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.016) 1px, transparent 1px),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01)),
+        rgba(9, 13, 23, 0.72);
+      background-size: auto, auto, 32px 32px, 32px 32px, auto, auto;
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.05),
+        0 24px 60px rgba(3, 8, 20, 0.28);
+    }
+
+    .stage::after {
+      border-color: rgba(255, 255, 255, 0.06);
+    }
+
+    .brain-card {
+      border-color: rgba(142, 181, 255, 0.28);
+      background:
+        radial-gradient(circle at 20% 20%, rgba(142, 181, 255, 0.22), transparent 42%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02)),
+        rgba(18, 23, 35, 0.72);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        0 22px 48px rgba(3, 8, 20, 0.32);
+    }
+
+    .signal-line {
+      background: linear-gradient(180deg, rgba(142, 181, 255, 0.72), rgba(197, 163, 255, 0.56), rgba(99, 223, 192, 0.46));
+    }
+
+    .node.active {
+      border-color: rgba(142, 181, 255, 0.34);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.06),
+        0 0 0 1px rgba(142, 181, 255, 0.16);
+    }
+
+    .node.watch {
+      border-color: rgba(255, 191, 125, 0.34);
+    }
+
+    .node.quarantine {
+      border-color: rgba(255, 141, 147, 0.38);
+    }
+
+    .node-id,
+    .node-title,
+    .outcome strong,
+    .hero-panel h3,
+    .judge-card h3,
+    .story-title strong,
+    .decision-title strong,
+    .theme-card strong,
+    .flow-step strong,
+    .readiness-item strong,
+    .playground-card strong {
+      color: #f7f9ff;
+    }
+
+    .trust-rail,
+    .bar,
+    .progress,
+    .risk-track,
+    .mini-bar {
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .progress span {
+      background: linear-gradient(90deg, #ff9e8c, #c5a3ff, #8eb5ff);
+    }
+
+    .risk-track span {
+      background: linear-gradient(90deg, #63dfc0, #8eb5ff, #ffbf7d);
+    }
+
+    .recommendation-output {
+      border-color: rgba(142, 181, 255, 0.2);
+      background: rgba(142, 181, 255, 0.1);
+      color: #e6efff;
+    }
+
+    .story-lane.before,
+    .judge-card.bad {
+      background:
+        linear-gradient(180deg, rgba(255, 141, 147, 0.14), rgba(255, 141, 147, 0.05)),
+        rgba(18, 22, 34, 0.7);
+      border-color: rgba(255, 141, 147, 0.2);
+    }
+
+    .story-lane.after,
+    .judge-card.good {
+      background:
+        linear-gradient(180deg, rgba(142, 181, 255, 0.14), rgba(99, 223, 192, 0.06)),
+        rgba(18, 22, 34, 0.7);
+      border-color: rgba(142, 181, 255, 0.2);
+    }
+
+    .judge-card.warn,
+    .readiness-item.pending {
+      background:
+        linear-gradient(180deg, rgba(255, 191, 125, 0.14), rgba(255, 191, 125, 0.05)),
+        rgba(18, 22, 34, 0.7);
+      border-color: rgba(255, 191, 125, 0.2);
+    }
+
+    .story-score {
+      color: #f4f7ff;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .chart-frame {
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.04)),
+        rgba(246, 248, 253, 0.96);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .hero-panel.primary {
+      border-color: rgba(142, 181, 255, 0.18);
+      background:
+        radial-gradient(circle at 82% 12%, rgba(99, 223, 192, 0.12), transparent 22%),
+        radial-gradient(circle at 18% 0%, rgba(142, 181, 255, 0.18), transparent 24%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02)),
+        rgba(18, 22, 34, 0.72);
+    }
+
+    .hero-callout,
+    .hero-step,
+    .judge-step,
+    .story-step,
+    .story-note,
+    .hero-stat {
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.015)),
+        rgba(11, 15, 24, 0.56);
+      border-color: rgba(255, 255, 255, 0.08);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    }
+
+    .hero-stat .value,
+    .judge-card .value,
+    .value {
+      color: #f7f9ff;
+    }
+
+    .json-block {
+      color: #dce8ff;
+    }
+
+    .event .reward {
+      color: #9bd0ff;
+    }
+
+    ::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.14);
+      border-radius: 999px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.04);
+    }
+
     @media (max-width: 1180px) {
       .console {
         grid-template-columns: 1fr;
@@ -1264,6 +1662,39 @@
           "events"
           "flow"
           "themes";
+      }
+
+      .console[data-view="overview"] {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+          "hero"
+          "story"
+          "proof"
+          "flow"
+          "themes"
+          "readiness";
+      }
+
+      .console[data-view="playground"] {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+          "theater"
+          "command"
+          "mission"
+          "trust"
+          "playground"
+          "events";
+      }
+
+      .console[data-view="judge"] {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+          "hero"
+          "story"
+          "proof"
+          "theater"
+          "mission"
+          "judge";
       }
 
       header {
@@ -1404,7 +1835,7 @@
       </div>
     </div>
 
-    <main class="console">
+    <main id="console" class="console">
       <section class="hero">
         <div class="section-head">
           <h2>System Overview</h2>
@@ -1915,6 +2346,7 @@
     };
 
     const el = {
+      console: document.getElementById("console"),
       taskSelect: document.getElementById("taskSelect"),
       seedInput: document.getElementById("seedInput"),
       resetBtn: document.getElementById("resetBtn"),
@@ -1981,10 +2413,10 @@
     };
 
     function trustColor(value) {
-      if (value >= 0.72) return "#27e0a1";
-      if (value >= 0.48) return "#73a7ff";
-      if (value >= 0.30) return "#f5ba41";
-      return "#ff5f45";
+      if (value >= 0.72) return "#63dfc0";
+      if (value >= 0.48) return "#8eb5ff";
+      if (value >= 0.30) return "#ffbf7d";
+      return "#ff8d93";
     }
 
     function trustStatus(value) {
@@ -2029,15 +2461,15 @@
       const sectionViews = {
         hero: ["overview", "judge"],
         theater: ["playground", "judge"],
-        command: ["playground", "judge"],
+        command: ["playground"],
         mission: ["playground", "judge"],
-        trust: ["playground", "judge"],
-        playground: ["playground", "judge"],
+        trust: ["playground"],
+        playground: ["playground"],
         story: ["overview", "judge"],
         judge: ["judge"],
         readiness: ["overview"],
         proof: ["overview", "judge"],
-        events: ["playground", "judge"],
+        events: ["playground"],
         flow: ["overview"],
         themes: ["overview"]
       };
@@ -2051,11 +2483,14 @@
       el.viewOverviewBtn.classList.toggle("active", view === "overview");
       el.viewPlaygroundBtn.classList.toggle("active", view === "playground");
       el.viewJudgeBtn.classList.toggle("active", view === "judge");
+      if (el.console) {
+        el.console.dataset.view = view;
+      }
 
       const copy = {
-        overview: "Overview turns the environment into a judge-readable system story: the problem, the learning signal, and the live failure mode it fixes.",
-        playground: "Playground is the backend-visible mode: every reset() and step() payload is shown so you can understand exactly what the environment returns.",
-        judge: "Judge Demo is the fast pitch mode: show baseline failure, show heuristic recovery, then swap profiles to prove the agent learned a skill instead of an identity."
+        overview: "Overview is the clean narrative surface: what SENTINEL solves, how reward proves learning, and why trust calibration matters for real multi-agent systems.",
+        playground: "Playground is the engineering surface: live trust state, action routing, backend request and response payloads, and flight-recorder events.",
+        judge: "Judge Demo is the pitch surface: baseline failure, heuristic recovery, then profile swap to show the orchestrator learned a transferable trust skill."
       };
       if (el.viewCopy) {
         el.viewCopy.textContent = copy[view] || copy.overview;
