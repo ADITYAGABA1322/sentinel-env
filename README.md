@@ -14,6 +14,14 @@ Self-Evolving Network for Training Intelligent Agents Under Adversarial Long-Hor
 
 SENTINEL is an OpenEnv-compatible RL environment for one core skill: training an orchestrator to decide who to trust, when to verify, how to recover, and how to finish long multi-agent work when specialist agents are unreliable or adversarial.
 
+## Rollout Source Of Truth
+
+The phased execution plan and presentation assets now live in-repo:
+
+- [Rollout](docs/ROLL_OUT.md)
+- [Narrative Lock](docs/presentation/NARRATIVE_LOCK.md)
+- [Visual System](docs/diagrams/VISUAL_SYSTEM.md)
+
 ## Why It Matters
 
 Modern agent systems fail in the same pattern:
