@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI, HTTPException, Query
+from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel
 
@@ -28,6 +29,11 @@ app = FastAPI(
 _sessions: dict[str, SentinelEnv] = {}
 _STATIC_DIR = Path(__file__).resolve().parent / "static"
 _OUTPUTS_DIR = Path(__file__).resolve().parent / "outputs"
+_FRONTEND_OUT_DIR = Path(__file__).resolve().parent / "ui" / "out"
+_FRONTEND_NEXT_DIR = _FRONTEND_OUT_DIR / "_next"
+
+if _FRONTEND_NEXT_DIR.exists():
+    app.mount("/_next", StaticFiles(directory=_FRONTEND_NEXT_DIR), name="next-assets")
 
 def _get_env(session_id: str) -> SentinelEnv:
     if session_id not in _sessions:
@@ -64,6 +70,9 @@ def health():
 
 @app.get("/")
 def root():
+    frontend_index = _FRONTEND_OUT_DIR / "index.html"
+    if frontend_index.exists():
+        return FileResponse(frontend_index)
     index_path = _STATIC_DIR / "index.html"
     if index_path.exists():
         return FileResponse(index_path)

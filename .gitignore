@@ -67,6 +67,9 @@ datasets/
 dist/
 build/
 out/
+ui/node_modules/
+ui/.next/
+ui/out/
 
 # =========================
 # TEMP FILES
