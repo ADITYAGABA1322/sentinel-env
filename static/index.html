@@ -202,7 +202,9 @@
       grid-template-columns: minmax(420px, 1.35fr) minmax(340px, 0.85fr);
       grid-template-areas:
         "theater command"
-        "mission trust"
+        "mission playground"
+        "trust playground"
+        "story readiness"
         "proof events"
         "flow themes";
       align-items: start;
@@ -221,6 +223,9 @@
     .command { grid-area: command; }
     .mission { grid-area: mission; }
     .trust { grid-area: trust; }
+    .playground { grid-area: playground; }
+    .story { grid-area: story; }
+    .readiness { grid-area: readiness; }
     .proof { grid-area: proof; }
     .events { grid-area: events; }
     .flow { grid-area: flow; }
@@ -748,6 +753,189 @@
       border-radius: 4px;
     }
 
+    .json-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .json-panel {
+      min-height: 248px;
+      border: 1px solid #394132;
+      border-radius: 8px;
+      background: #0c100a;
+      overflow: hidden;
+    }
+
+    .json-head {
+      min-height: 44px;
+      padding: 10px 12px;
+      border-bottom: 1px solid #394132;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      color: var(--cream);
+      font-size: 13px;
+      font-weight: 780;
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .json-head span {
+      color: var(--muted);
+      font-weight: 620;
+      font-size: 12px;
+    }
+
+    .json-block {
+      margin: 0;
+      min-height: 204px;
+      padding: 12px;
+      overflow: auto;
+      color: #d7fbe8;
+      font-size: 12px;
+      line-height: 1.48;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .playground-meta {
+      margin-top: 12px;
+      display: grid;
+      grid-template-columns: 168px 1fr;
+      gap: 12px;
+    }
+
+    .playground-card {
+      min-height: 96px;
+      border: 1px solid #394132;
+      border-radius: 8px;
+      padding: 12px;
+      background: var(--panel-2);
+    }
+
+    .playground-card strong {
+      display: block;
+      color: var(--cream);
+      margin-bottom: 7px;
+      font-size: 14px;
+    }
+
+    .playground-card span {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .story-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .story-lane {
+      min-height: 250px;
+      border: 1px solid #394132;
+      border-radius: 8px;
+      padding: 14px;
+      background: var(--panel-2);
+    }
+
+    .story-lane.before {
+      border-color: rgba(255, 95, 69, 0.42);
+      background: var(--flame-soft);
+    }
+
+    .story-lane.after {
+      border-color: rgba(39, 224, 161, 0.42);
+      background: var(--jade-soft);
+    }
+
+    .story-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .story-title strong {
+      color: var(--cream);
+      font-size: 16px;
+    }
+
+    .story-score {
+      border-radius: 999px;
+      padding: 4px 9px;
+      font-size: 12px;
+      font-weight: 820;
+      color: #0b0d08;
+      background: var(--cream);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .story-flow {
+      display: grid;
+      gap: 9px;
+    }
+
+    .story-step {
+      min-height: 48px;
+      border: 1px solid #394132;
+      border-radius: 8px;
+      padding: 10px;
+      background: rgba(10, 12, 8, 0.68);
+      color: #ece6cf;
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    .story-note {
+      margin-top: 12px;
+      min-height: 58px;
+      border: 1px dashed #4a5241;
+      border-radius: 8px;
+      padding: 11px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+      background: rgba(10, 12, 8, 0.35);
+    }
+
+    .readiness-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .readiness-item {
+      min-height: 64px;
+      border: 1px solid rgba(39, 224, 161, 0.38);
+      border-radius: 8px;
+      padding: 11px 12px;
+      background: rgba(39, 224, 161, 0.08);
+    }
+
+    .readiness-item.pending {
+      border-color: rgba(245, 186, 65, 0.38);
+      background: rgba(245, 186, 65, 0.09);
+    }
+
+    .readiness-item strong {
+      display: block;
+      color: var(--cream);
+      margin-bottom: 5px;
+      font-size: 14px;
+    }
+
+    .readiness-item span {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
     .event-list {
       display: grid;
       gap: 8px;
@@ -878,6 +1066,9 @@
           "command"
           "mission"
           "trust"
+          "playground"
+          "story"
+          "readiness"
           "proof"
           "events"
           "flow"
@@ -905,6 +1096,9 @@
       .stage-topline,
       .outcome-strip,
       .proof-grid,
+      .json-grid,
+      .playground-meta,
+      .story-grid,
       .flow-line,
       .theme-grid,
       .stats-grid {
@@ -1148,6 +1342,117 @@
         </div>
       </section>
 
+      <section class="playground">
+        <div class="section-head">
+          <h2>API Playground</h2>
+          <div class="chips">
+            <span id="endpointChip" class="chip">POST /reset</span>
+            <span class="chip live">backend visible</span>
+          </div>
+        </div>
+        <div class="body">
+          <div class="json-grid">
+            <div class="json-panel">
+              <div class="json-head">
+                <strong>Last Request</strong>
+                <span>what UI sent</span>
+              </div>
+              <pre id="requestJson" class="json-block">{
+  "status": "waiting",
+  "message": "Reset or step to inspect backend payloads."
+}</pre>
+            </div>
+            <div class="json-panel">
+              <div class="json-head">
+                <strong>Last Response</strong>
+                <span>what backend returned</span>
+              </div>
+              <pre id="responseJson" class="json-block">{
+  "status": "waiting",
+  "message": "Observation, reward, and info will appear here."
+}</pre>
+            </div>
+          </div>
+          <div class="playground-meta">
+            <div class="playground-card">
+              <strong id="playgroundMode">reset()</strong>
+              <span id="playgroundCopy">Start a new episode, get the first observation, then choose actions step by step.</span>
+            </div>
+            <div class="playground-card">
+              <strong>What To Watch</strong>
+              <span id="playgroundSummary">Observation tells you the next subtask and public trust scores. Reward tells you whether routing was correct. Info tells you the normalized episode score and adversarial counters.</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="story">
+        <div class="section-head">
+          <h2>Before And After</h2>
+          <div class="chips">
+            <span class="chip fail">blind trust</span>
+            <span class="chip live">trained skepticism</span>
+          </div>
+        </div>
+        <div class="body">
+          <div class="story-grid">
+            <div class="story-lane before">
+              <div class="story-title">
+                <strong>Without SENTINEL</strong>
+                <span class="story-score">task3 random 0.699</span>
+              </div>
+              <div class="story-flow">
+                <div class="story-step">All public slots start near the same trust. The orchestrator delegates with weak evidence.</div>
+                <div class="story-step">A high-confidence specialist can slip poisoned output into a high-stakes node.</div>
+                <div class="story-step">Downstream subtasks inherit bad state, so the mission drifts before anyone notices.</div>
+                <div class="story-step">Detection stays weak and the agent cannot explain which public slot became dangerous.</div>
+              </div>
+              <div class="story-note">Judge takeaway: good-looking multi-agent systems still fail if trust is static or role-based.</div>
+            </div>
+            <div class="story-lane after">
+              <div class="story-title">
+                <strong>With SENTINEL</strong>
+                <span class="story-score">task3 heuristic 0.784</span>
+              </div>
+              <div class="story-flow">
+                <div class="story-step">Behavior updates the TrustLedger after every step, so public slots diverge quickly.</div>
+                <div class="story-step">When stakes rise and trust is shaky, the orchestrator switches from delegate to verify.</div>
+                <div class="story-step">Adversarial attempts are detected before they cascade through the task graph.</div>
+                <div class="story-step">Profile swap forces re-learning from evidence, proving skill instead of memorized identity.</div>
+              </div>
+              <div class="story-note">Judge takeaway: this environment teaches oversight, recovery, and calibrated delegation under uncertainty.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="readiness">
+        <div class="section-head">
+          <h2>Hackathon Readiness</h2>
+          <span class="muted">what is done vs what is left</span>
+        </div>
+        <div class="body">
+          <div class="readiness-list">
+            <div class="readiness-item">
+              <strong>Environment Core Ready</strong>
+              <span>OpenEnv shape works: reset, step, state, normalized score, Docker, Space, and live dashboard.</span>
+            </div>
+            <div class="readiness-item">
+              <strong>Reward Proof Ready</strong>
+              <span>Random, heuristic, and oracle-lite comparisons are committed and visible in the UI.</span>
+            </div>
+            <div class="readiness-item">
+              <strong>Training Harness Ready</strong>
+              <span>TRL and Unsloth dry-run path exists; onsite job is to capture the real reward-improvement curve.</span>
+            </div>
+            <div class="readiness-item pending">
+              <strong>Still Needed For Finale</strong>
+              <span>Mini-blog or video, onsite GRPO run, and one polished 3-minute story using this dashboard plus before/after evidence.</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section class="proof">
         <div class="section-head">
           <h2>Reward Signal Proof</h2>
@@ -1266,7 +1571,10 @@
       observation: null,
       done: true,
       running: false,
-      events: []
+      events: [],
+      lastRequest: null,
+      lastResult: null,
+      lastMode: "reset()"
     };
 
     const el = {
@@ -1296,6 +1604,12 @@
       subtaskText: document.getElementById("subtaskText"),
       trustList: document.getElementById("trustList"),
       trustMean: document.getElementById("trustMean"),
+      endpointChip: document.getElementById("endpointChip"),
+      requestJson: document.getElementById("requestJson"),
+      responseJson: document.getElementById("responseJson"),
+      playgroundMode: document.getElementById("playgroundMode"),
+      playgroundCopy: document.getElementById("playgroundCopy"),
+      playgroundSummary: document.getElementById("playgroundSummary"),
       detectChip: document.getElementById("detectChip"),
       poisonChip: document.getElementById("poisonChip"),
       sessionText: document.getElementById("sessionText"),
@@ -1318,6 +1632,10 @@
       if (value >= 0.48) return "watch";
       if (value >= 0.30) return "risk";
       return "quarantine";
+    }
+
+    function prettyJson(value) {
+      return JSON.stringify(value, null, 2);
     }
 
     function bestSpecialist() {
@@ -1391,6 +1709,41 @@
       `).join("");
     }
 
+    function renderPlayground() {
+      if (el.requestJson) {
+        el.requestJson.textContent = prettyJson(state.lastRequest || {
+          status: "waiting",
+          message: "Reset or step to inspect backend payloads."
+        });
+      }
+      if (el.responseJson) {
+        el.responseJson.textContent = prettyJson(state.lastResult || {
+          status: "waiting",
+          message: "Observation, reward, and info will appear here."
+        });
+      }
+      if (el.playgroundMode) {
+        el.playgroundMode.textContent = state.lastMode;
+      }
+      if (el.endpointChip) {
+        const path = state.lastRequest?.path || "/reset";
+        el.endpointChip.textContent = `POST ${path}`;
+      }
+      if (el.playgroundCopy) {
+        el.playgroundCopy.textContent = state.lastMode === "step()"
+          ? "A step sends one action into the environment and returns the next observation, reward, done flag, and info."
+          : "Reset starts a new episode, samples a scenario, reshuffles hidden profiles, and returns the first observation.";
+      }
+      if (el.playgroundSummary) {
+        const obs = state.lastResult?.observation;
+        const reward = state.lastResult?.reward;
+        const info = state.lastResult?.info;
+        el.playgroundSummary.textContent = obs
+          ? `Current subtask: ${obs.current_subtask} | Reward: ${Number(reward?.value ?? 0).toFixed(2)} | Score: ${Number(info?.score ?? 0).toFixed(3)} | Detections: ${info?.adversarial_detections ?? 0}`
+          : "Observation tells you the next subtask and public trust scores. Reward tells you whether routing was correct. Info tells you the normalized episode score and adversarial counters.";
+      }
+    }
+
     function renderRecommendation() {
       const move = recommendedMove();
       const obs = state.observation;
@@ -1426,6 +1779,7 @@
         renderSpecialists();
         renderEvents();
         renderRecommendation();
+        renderPlayground();
         setDisabled(true);
         return;
       }
@@ -1459,6 +1813,7 @@
       renderSpecialists();
       renderEvents();
       renderRecommendation();
+      renderPlayground();
       setDisabled(state.done || state.running);
     }
 
@@ -1484,6 +1839,12 @@
       el.resetPanelBtn.disabled = true;
       try {
         const seed = Number(el.seedInput.value || 0);
+        state.lastMode = "reset()";
+        state.lastRequest = {
+          method: "POST",
+          path: "/reset",
+          body: {task_type: el.taskSelect.value, seed}
+        };
         const response = await fetch("/reset", {
           method: "POST",
           headers: {"Content-Type": "application/json"},
@@ -1491,6 +1852,7 @@
         });
         const result = await response.json();
         if (!response.ok) throw new Error(result.detail || "reset failed");
+        state.lastResult = result;
         state.taskType = result.observation.task_type;
         state.sessionId = result.info.session_id;
         state.events = [];
@@ -1498,7 +1860,9 @@
         addEvent(0, "reset", "Episode initialized with shuffled hidden profiles.", "0.00");
         render(result);
       } catch (error) {
+        state.lastResult = {error: error.message};
         addEvent(0, "error", error.message, "0.00");
+        renderPlayground();
         renderEvents();
       } finally {
         state.running = false;
@@ -1515,6 +1879,12 @@
       try {
         const chosen = specialist || el.specialistSelect.value || bestSpecialist();
         const payload = actionPayload(type, type === "delegate" || type === "verify" ? chosen : null);
+        state.lastMode = "step()";
+        state.lastRequest = {
+          method: "POST",
+          path: `/step?session_id=${state.sessionId}`,
+          body: payload
+        };
         const response = await fetch(`/step?session_id=${encodeURIComponent(state.sessionId)}`, {
           method: "POST",
           headers: {"Content-Type": "application/json"},
@@ -1522,12 +1892,15 @@
         });
         const result = await response.json();
         if (!response.ok) throw new Error(result.detail || "step failed");
+        state.lastResult = result;
         const reward = Number(result.reward.value || 0).toFixed(2);
         const label = payload.specialist_id ? `${type}:${payload.specialist_id}` : type;
         addEvent(result.info.step_count, label, result.reward.reason, reward);
         render(result);
       } catch (error) {
+        state.lastResult = {error: error.message};
         addEvent(state.observation?.step_count || 0, "error", error.message, "0.00");
+        renderPlayground();
         renderEvents();
       } finally {
         state.running = false;
