@@ -88,6 +88,14 @@ def baseline_comparison_chart():
     return FileResponse(chart_path, media_type="image/png")
 
 
+@app.get("/assets/evaluation_results.json")
+def evaluation_results():
+    results_path = _OUTPUTS_DIR / "evaluation_results.json"
+    if not results_path.exists():
+        raise HTTPException(status_code=404, detail="Evaluation results not found.")
+    return FileResponse(results_path, media_type="application/json")
+
+
 @app.get("/api")
 def api_root():
     return {
