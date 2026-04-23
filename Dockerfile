@@ -1,3 +1,14 @@
+FROM node:20-alpine AS ui-builder
+
+WORKDIR /ui
+
+COPY ui/package.json ui/package-lock.json ./
+RUN npm ci
+
+COPY ui ./
+RUN npm run build
+
+
 FROM python:3.11-slim
 
 WORKDIR /app
@@ -23,6 +34,7 @@ COPY pyproject.toml .
 COPY server ./server
 COPY static ./static
 COPY outputs ./outputs
+COPY --from=ui-builder /ui/out ./ui/out
 
 # Create outputs directory for baseline scores
 RUN mkdir -p outputs
