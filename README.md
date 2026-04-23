@@ -100,7 +100,10 @@ The Space opens directly into **SENTINEL Trust Mission Control**, a judge-demo d
 - S0-S4 network theater with trust state per public slot
 - manual `delegate`, `verify`, `solve_independently`, and `skip` controls
 - heuristic auto-policy and one-click recommended move
+- API playground showing raw request and response payloads
 - profile reshuffle demo via seed swap
+- before-and-after story lane for judge presentation
+- hackathon readiness panel for what is done vs still pending
 - risk gate for high-stakes subtasks
 - flight recorder of step rewards and decisions
 - code-flow map from `reset()` to reward
