@@ -6,7 +6,8 @@ Emits [START] / [STEP] / [END] structured logs exactly as required.
 
 Heuristic agent logic:
   - Always delegates to the specialist with highest trust score
-  - If stakes >= 0.70 and trust of chosen specialist < 0.60 → verify instead
+  - If stakes enters the adversarial-awareness zone and trust of chosen
+    specialist < 0.60 -> verify instead
   - Never skips
   - Never solves independently (too expensive)
 
@@ -38,6 +39,8 @@ if ENV_URL:
 else:
     from environment import SentinelEnv
     USE_REMOTE = False
+
+from sentinel_config import ADVERSARIAL_AWARENESS_STAKES
 
 
 # ---------------------------------------------------------------------------
@@ -100,7 +103,7 @@ def heuristic_action(obs: dict, session_id: str) -> dict:
     best_trust      = trust.get(best_specialist, 0.5)
 
     # Upgrade to verify if high stakes AND low trust in best specialist
-    if stakes >= 0.70 and best_trust < 0.60:
+    if stakes >= ADVERSARIAL_AWARENESS_STAKES and best_trust < 0.60:
         action_type = "verify"
     else:
         action_type = "delegate"

@@ -18,6 +18,15 @@ class SpecialistTests(unittest.TestCase):
         self.assertEqual(in_domain.outcome, 1.0)
         self.assertEqual(out_domain.outcome, 0.0)
 
+    def test_domain_bound_prefers_structured_domain_over_keywords(self) -> None:
+        specialist = DomainBoundSpecialist()
+
+        structured = specialist.execute("Examine the payload carefully.", 0.2, random.Random(1), domain="ANALYZE")
+        mismatched = specialist.execute("Analyze this deployment step.", 0.2, random.Random(1), domain="EXECUTE")
+
+        self.assertTrue(structured.metadata["in_domain"])
+        self.assertFalse(mismatched.metadata["in_domain"])
+
     def test_profile_shuffle_keeps_public_reliability_aligned(self) -> None:
         pool = SpecialistPool()
         pool.reset(seed=7)

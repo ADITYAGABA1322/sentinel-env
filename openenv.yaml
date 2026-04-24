@@ -93,6 +93,15 @@ api:
           required: true
       returns: SentinelState with trust_snapshot, completion, adversarial stats
 
+deployment:
+  session_backend: single_process_memory
+  workers: 1
+  session_ttl_seconds: 1800
+  session_max_active: 256
+  note: >
+    Active SentinelEnv sessions are stored in one process with TTL/LRU cleanup.
+    Multi-worker deployments require sticky sessions or a shared session store.
+
 tasks:
   task1:
     name: Single-Step Trust Decision
@@ -119,11 +128,17 @@ tasks:
     reward: "terminal completion×0.35 + detection×0.30 + calibration×0.25 + efficiency×0.10"
 
 specialists:
-  S0: "AccurateSlow — 90% accurate, costs +1 extra step"
+  S0: "AccurateSlow — 90% accurate, costs 2 steps"
   S1: "OverconfidentFast — 60% accurate, always reports high confidence"
   S2: "DomainBound — 95% in-domain, 10% out-of-domain"
   S3: "Adversarial — benign until stakes >= 0.70, then poisons result"
   S4: "Degrading — 95% first call, -15% accuracy per reuse"
+
+thresholds:
+  adversarial_trigger_stakes: 0.70
+  adversarial_awareness_stakes: 0.70
+  critical_poison_stakes: 0.85
+  verify_extra_step_cost: 1
 
 dataset:
   total_scenarios: 120
