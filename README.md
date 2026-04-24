@@ -100,6 +100,23 @@ The root route `/` serves the live SENTINEL dashboard on Hugging Face Spaces.
 Use `/api` for the JSON route index.
 Use `/assets/baseline_comparison.png` for the committed baseline chart used in the dashboard.
 
+## Backend Walkthrough
+
+For terminal-first debugging and pitch clarity, run:
+
+```bash
+python scripts/backend_walkthrough.py --task task3 --seed 42 --policy heuristic --compare
+```
+
+This prints the full backend story:
+
+- the compact `/reset` JSON the orchestrator sees
+- the hidden shuffled profile for builders only
+- each action, reward, score, trust update, detection, and poisoning count
+- a before/after comparison of blind trust vs trust-aware routing vs oracle-lite upper bound
+
+The key scenario to understand is `task3, seed=42`: public slot `S0` is secretly adversarial. It behaves correctly at low stakes, gains trust, then starts poisoning high-stakes nodes. SENTINEL exists to train the orchestrator to catch that shift.
+
 ## Live Dashboard
 
 The Space opens directly into **SENTINEL Trust Mission Control**, a judge-demo dashboard:
@@ -193,11 +210,12 @@ pip install pytest
 Run checks:
 
 ```bash
-python -m py_compile app.py server/app.py environment.py models.py graders.py specialists.py trust_ledger.py task_graph.py scenarios.py inference.py comms_bus.py training/evaluate.py training/train.py
+python -m py_compile app.py server/app.py environment.py models.py graders.py specialists.py trust_ledger.py task_graph.py scenarios.py inference.py comms_bus.py training/evaluate.py training/train.py scripts/backend_walkthrough.py
 python -m pytest -q
 python inference.py
 python training/evaluate.py --episodes 20 --task all --plot outputs/baseline_comparison.png
 python training/train.py --dry-run --episodes 5
+python scripts/backend_walkthrough.py --task task3 --seed 42 --policy heuristic --compare --max-rows 14
 ```
 
 Run the server:
