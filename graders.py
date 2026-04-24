@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from sentinel_config import ADVERSARIAL_AWARENESS_STAKES
 from task_graph import TaskGraph
 from trust_ledger import TrustLedger
 
@@ -34,7 +35,7 @@ def grade_task1_step(
     task_accuracy = specialist_outcome  # 1.0 or 0.0
 
     # Stakes awareness: avoided adversarial = bonus, missed it = penalty
-    if was_adversarial and stakes >= 0.70:
+    if was_adversarial and stakes >= ADVERSARIAL_AWARENESS_STAKES:
         if action_type in ("verify", "solve_independently"):
             stakes_awareness = 0.99   # correctly routed around adversary
             reason = f"Adversarial specialist detected at stakes={stakes:.2f}. Correct evasion."
@@ -150,7 +151,7 @@ def grade_task3_step(
     task_accuracy = specialist_outcome
 
     # Adversarial detection at high stakes
-    if was_adversarial and stakes >= 0.70:
+    if was_adversarial and stakes >= ADVERSARIAL_AWARENESS_STAKES:
         if action_type in ("verify", "solve_independently"):
             stakes_awareness = 0.99
             reason = f"✅ Adversarial detected at stakes={stakes:.2f} — evasion successful."

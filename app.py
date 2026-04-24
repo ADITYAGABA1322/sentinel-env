@@ -1,7 +1,11 @@
 from __future__ import annotations
 
 import os
+import time
+from collections import OrderedDict
+from dataclasses import dataclass
 from pathlib import Path
+from threading import RLock
 from typing import Any
 
 from fastapi import FastAPI, HTTPException, Query
@@ -12,6 +16,7 @@ from pydantic import BaseModel
 from environment import SentinelEnv
 from mission_context import build_orchestrator_prompt, mission_for_task, problem_statement
 from scenarios import scenario_summary
+from sentinel_config import SESSION_BACKEND, SESSION_MAX_ACTIVE, SESSION_TTL_SECONDS
 
 # ---------------------------------------------------------------------------
 # App + session store
@@ -26,8 +31,75 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# One env instance per session_id
-_sessions: dict[str, SentinelEnv] = {}
+@dataclass
+class SessionEntry:
+    env: SentinelEnv
+    created_at: float
+    last_access_at: float
+
+
+class SessionStore:
+    """
+    Single-process TTL + LRU store for active SentinelEnv objects.
+
+    This is intentionally memory-backed for OpenEnv/HF Space simplicity. It is
+    safe for the Dockerfile's single-worker deployment. If you increase workers,
+    use sticky routing or replace this with a shared backend such as Redis.
+    """
+
+    def __init__(self, ttl_seconds: int, max_active: int) -> None:
+        self._ttl_seconds = ttl_seconds
+        self._max_active = max_active
+        self._items: OrderedDict[str, SessionEntry] = OrderedDict()
+        self._lock = RLock()
+
+    def set(self, session_id: str, env: SentinelEnv) -> None:
+        now = time.monotonic()
+        with self._lock:
+            self._prune_locked(now)
+            self._items[session_id] = SessionEntry(env=env, created_at=now, last_access_at=now)
+            self._items.move_to_end(session_id)
+            while len(self._items) > self._max_active:
+                self._items.popitem(last=False)
+
+    def get(self, session_id: str) -> SentinelEnv | None:
+        now = time.monotonic()
+        with self._lock:
+            self._prune_locked(now)
+            entry = self._items.get(session_id)
+            if entry is None:
+                return None
+            entry.last_access_at = now
+            self._items.move_to_end(session_id)
+            return entry.env
+
+    def pop(self, session_id: str) -> SentinelEnv | None:
+        with self._lock:
+            entry = self._items.pop(session_id, None)
+            return entry.env if entry else None
+
+    def stats(self) -> dict[str, int | str | bool]:
+        with self._lock:
+            self._prune_locked(time.monotonic())
+            return {
+                "backend": SESSION_BACKEND,
+                "active_sessions": len(self._items),
+                "ttl_seconds": self._ttl_seconds,
+                "max_active": self._max_active,
+                "multi_worker_safe": False,
+            }
+
+    def _prune_locked(self, now: float) -> None:
+        expired = [
+            sid
+            for sid, entry in self._items.items()
+            if now - entry.last_access_at > self._ttl_seconds
+        ]
+        for sid in expired:
+            self._items.pop(sid, None)
+
+
+_sessions = SessionStore(ttl_seconds=SESSION_TTL_SECONDS, max_active=SESSION_MAX_ACTIVE)
 _STATIC_DIR = Path(__file__).resolve().parent / "static"
 _OUTPUTS_DIR = Path(__file__).resolve().parent / "outputs"
 _FRONTEND_OUT_DIR = Path(__file__).resolve().parent / "ui" / "out"
@@ -37,9 +109,10 @@ if _FRONTEND_NEXT_DIR.exists():
     app.mount("/_next", StaticFiles(directory=_FRONTEND_NEXT_DIR), name="next-assets")
 
 def _get_env(session_id: str) -> SentinelEnv:
-    if session_id not in _sessions:
+    env = _sessions.get(session_id)
+    if env is None:
         raise HTTPException(status_code=404, detail=f"Session '{session_id}' not found. Call /reset first.")
-    return _sessions[session_id]
+    return env
 
 
 # ---------------------------------------------------------------------------
@@ -66,7 +139,12 @@ class StepRequest(BaseModel):
 
 @app.get("/health")
 def health():
-    return {"status": "ok", "environment": "sentinel-env", "version": "1.0.0"}
+    return {
+        "status": "ok",
+        "environment": "sentinel-env",
+        "version": "1.0.0",
+        "session_store": _sessions.stats(),
+    }
 
 
 @app.get("/")
@@ -162,6 +240,13 @@ def metadata():
         "scenarios": summary,
         "reward_range": "(0.01, 0.99) boundary-exclusive",
         "real_world_bridge": problem_statement()["problem"]["not_a_simple_prompt_solver"],
+        "deployment_contract": {
+            "session_backend": SESSION_BACKEND,
+            "single_worker_required": True,
+            "reason": "Active SentinelEnv objects live in one process memory with TTL/LRU cleanup.",
+            "ttl_seconds": SESSION_TTL_SECONDS,
+            "max_active_sessions": SESSION_MAX_ACTIVE,
+        },
     }
 
 
@@ -227,7 +312,7 @@ def reset(req: ResetRequest = ResetRequest()):
         seed=req.seed,
     )
     session_id = result["info"]["session_id"]
-    _sessions[session_id] = env
+    _sessions.set(session_id, env)
     result["info"]["mission"] = mission_for_task(result["observation"]["task_type"])
     result["info"]["orchestrator_prompt"] = build_orchestrator_prompt(result["observation"])
     return result
@@ -243,7 +328,7 @@ def step(req: StepRequest, session_id: str = Query(...)):
 
     # Clean up completed sessions to avoid memory leak
     if result["done"]:
-        _sessions.pop(session_id, None)
+        _sessions.pop(session_id)
     else:
         result["info"]["orchestrator_prompt"] = build_orchestrator_prompt(result["observation"])
 
@@ -266,7 +351,9 @@ def mcp(body: dict[str, Any]):
         env = SentinelEnv()
         result = env.reset(**params)
         session_id = result["info"]["session_id"]
-        _sessions[session_id] = env
+        _sessions.set(session_id, env)
+        result["info"]["mission"] = mission_for_task(result["observation"]["task_type"])
+        result["info"]["orchestrator_prompt"] = build_orchestrator_prompt(result["observation"])
         return {"result": result}
 
     elif method == "step":
@@ -276,7 +363,9 @@ def mcp(body: dict[str, Any]):
         env = _get_env(session_id)
         result = env.step(params)
         if result["done"]:
-            _sessions.pop(session_id, None)
+            _sessions.pop(session_id)
+        else:
+            result["info"]["orchestrator_prompt"] = build_orchestrator_prompt(result["observation"])
         return {"result": result}
 
     elif method == "state":

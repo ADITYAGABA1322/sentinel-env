@@ -70,6 +70,9 @@ curl "http://localhost:7860/mission?task_type=task3"
 - Specialists: 5 scripted FSM agents with shuffled hidden profiles
 - Rewards: per-step reward plus terminal score, normalized to `0.0-1.0`
 - Dataset: 120 abstract multi-agent scenarios
+- Session store: single-process memory with TTL/LRU cleanup
+
+Deployment contract: run one server worker for the submitted Space. Active `SentinelEnv` objects live in process memory, so multi-worker deployments need sticky sessions or a shared store such as Redis. The Dockerfile intentionally starts uvicorn with `--workers 1`.
 
 ## Live Submission Targets
 
@@ -85,10 +88,10 @@ curl "http://localhost:7860/mission?task_type=task3"
 
 Hidden profiles:
 
-- `AccurateSlow`: 90 percent accurate, costs extra steps.
+- `AccurateSlow`: 90 percent accurate, costs 2 steps.
 - `OverconfidentFast`: quick and confident, wrong 40 percent of the time.
 - `DomainBound`: strong on analysis/verification, weak elsewhere.
-- `Adversarial`: benign at low stakes, poisons high-stakes steps.
+- `Adversarial`: benign below stakes `0.70`, poisons at stakes `>=0.70`.
 - `Degrading`: strong early, gets worse with reuse.
 
 ## Tasks
@@ -103,6 +106,13 @@ Hidden profiles:
 
 Rewards are deterministic and boundary-exclusive per step: `(0.01, 0.99)`.
 
+Shared threshold/cost constants live in `sentinel_config.py`:
+
+- `ADVERSARIAL_TRIGGER_STAKES = 0.70`: adversarial specialist starts poisoning.
+- `ADVERSARIAL_AWARENESS_STAKES = 0.70`: graders reward verification/evasion.
+- `CRITICAL_POISON_STAKES = 0.85`: unchecked poison ends the episode.
+- `VERIFY_EXTRA_STEP_COST = 1`: verify cost is specialist step cost plus one.
+
 Task 3 terminal score:
 
 ```text
@@ -112,7 +122,7 @@ Task 3 terminal score:
 + 0.10 * efficiency
 ```
 
-The episode `score` exposed in `info` and inference logs is normalized to `0.0-1.0`.
+The episode `score` exposed in `info` and inference logs is the mean reward over emitted grading events, normalized to `0.0-1.0`. It is intentionally not raw cumulative return; terminal reward and efficiency terms carry the penalty for unfinished or wasteful episodes while keeping scores comparable across tasks with different horizons.
 
 ## API
 
@@ -242,7 +252,7 @@ pip install pytest
 Run checks:
 
 ```bash
-python -m py_compile app.py server/app.py environment.py models.py graders.py specialists.py trust_ledger.py task_graph.py scenarios.py inference.py comms_bus.py mission_context.py training/evaluate.py training/train.py scripts/backend_walkthrough.py
+python -m py_compile app.py server/app.py environment.py models.py graders.py specialists.py trust_ledger.py task_graph.py scenarios.py inference.py comms_bus.py mission_context.py sentinel_config.py training/evaluate.py training/train.py scripts/backend_walkthrough.py
 python -m pytest -q
 python inference.py
 python training/evaluate.py --episodes 20 --task all --plot outputs/baseline_comparison.png

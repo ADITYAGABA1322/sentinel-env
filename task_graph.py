@@ -1,9 +1,15 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional
+from typing import Literal
+
+from sentinel_config import ADVERSARIAL_AWARENESS_STAKES
 
 from scenarios import Scenario, SubTask
+
+
+TaskStatus = Literal["pending", "ready", "in_progress", "completed", "failed", "skipped"]
+SummaryValue = str | int | float | bool
 
 
 # ---------------------------------------------------------------------------
@@ -13,7 +19,7 @@ from scenarios import Scenario, SubTask
 @dataclass
 class TaskNode:
     subtask: SubTask
-    status: str = "pending"      # pending | ready | in_progress | completed | failed | skipped
+    status: TaskStatus = "pending"
     outcome: float = 0.0         # 1.0 correct | 0.5 partial | 0.0 wrong
     specialist_used: str = ""
     attempts: int = 0
@@ -47,7 +53,7 @@ class TaskGraph:
     # State queries
     # ------------------------------------------------------------------
 
-    def current_node(self) -> Optional[TaskNode]:
+    def current_node(self) -> TaskNode | None:
         """
         Returns the first 'ready' node (all dependencies completed).
         Returns None if all nodes are done or none are unblocked yet.
@@ -125,7 +131,7 @@ class TaskGraph:
         return self._order.index(subtask_id)
 
     def high_stakes_nodes(self) -> list[TaskNode]:
-        return [n for n in self._nodes.values() if n.subtask["stakes"] >= 0.70]
+        return [n for n in self._nodes.values() if n.subtask["stakes"] >= ADVERSARIAL_AWARENESS_STAKES]
 
     # ------------------------------------------------------------------
     # Mutations
@@ -159,7 +165,7 @@ class TaskGraph:
     # Summary (for info dict in StepResult)
     # ------------------------------------------------------------------
 
-    def summary(self) -> dict:
+    def summary(self) -> dict[str, SummaryValue]:
         return {
             "scenario_id":          self._scenario["scenario_id"],
             "task_type":            self._scenario["task_type"],
@@ -173,5 +179,5 @@ class TaskGraph:
             "is_done":              self.is_done(),
         }
 
-    def node_statuses(self) -> dict[str, str]:
+    def node_statuses(self) -> dict[str, TaskStatus]:
         return {sid: n.status for sid, n in self._nodes.items()}

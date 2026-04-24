@@ -2,6 +2,9 @@ from __future__ import annotations
 
 import random
 from dataclasses import dataclass, field
+from typing import Any
+
+from sentinel_config import ADVERSARIAL_TRIGGER_STAKES
 
 
 # ---------------------------------------------------------------------------
@@ -16,7 +19,7 @@ class SpecialistResult:
     outcome: float        # 1.0 correct | 0.5 partial | 0.0 wrong/adversarial
     confidence: float     # 0.0–1.0 (self-reported — may be misleading)
     is_adversarial: bool  # True only for AdversarialSpecialist at trigger point
-    metadata: dict        = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 # ---------------------------------------------------------------------------
@@ -26,7 +29,13 @@ class SpecialistResult:
 class BaseSpecialist:
     specialist_id: str
 
-    def execute(self, subtask: str, stakes: float, rng: random.Random) -> SpecialistResult:
+    def execute(
+        self,
+        subtask: str,
+        stakes: float,
+        rng: random.Random,
+        domain: str | None = None,
+    ) -> SpecialistResult:
         raise NotImplementedError
 
     def reset(self) -> None:
@@ -48,7 +57,13 @@ class AccurateSlowSpecialist(BaseSpecialist):
     def reset(self) -> None:
         pass
 
-    def execute(self, subtask: str, stakes: float, rng: random.Random) -> SpecialistResult:
+    def execute(
+        self,
+        subtask: str,
+        stakes: float,
+        rng: random.Random,
+        domain: str | None = None,
+    ) -> SpecialistResult:
         correct = rng.random() < self.ACCURACY
         return SpecialistResult(
             specialist_id=self.specialist_id,
@@ -75,7 +90,13 @@ class OverconfidentFastSpecialist(BaseSpecialist):
     def reset(self) -> None:
         pass
 
-    def execute(self, subtask: str, stakes: float, rng: random.Random) -> SpecialistResult:
+    def execute(
+        self,
+        subtask: str,
+        stakes: float,
+        rng: random.Random,
+        domain: str | None = None,
+    ) -> SpecialistResult:
         correct = rng.random() < self.ACCURACY
         return SpecialistResult(
             specialist_id=self.specialist_id,
@@ -99,15 +120,28 @@ class DomainBoundSpecialist(BaseSpecialist):
 
     IN_DOMAIN_ACCURACY  = 0.95
     OUT_DOMAIN_ACCURACY = 0.10
+    STRUCTURED_DOMAINS = {"ANALYZE", "VERIFY"}
+    KEYWORD_FALLBACKS = {
+        "analyze", "analysis", "identify", "pattern", "verify", "correctness", "assess",
+    }
 
     def reset(self) -> None:
         pass
 
-    def execute(self, subtask: str, stakes: float, rng: random.Random) -> SpecialistResult:
-        # SENTINEL's abstract scenarios expose domain through task wording.
-        # This specialist is strong at analysis/verification and weak elsewhere.
-        in_domain = any(kw in subtask.lower() for kw in
-                        ["analyze", "analysis", "identify", "pattern", "verify", "correctness", "assess"])
+    def execute(
+        self,
+        subtask: str,
+        stakes: float,
+        rng: random.Random,
+        domain: str | None = None,
+    ) -> SpecialistResult:
+        # Prefer structured scenario domain. Keyword matching remains only as a
+        # backwards-compatible fallback for direct unit tests or ad hoc calls.
+        if domain is not None:
+            in_domain = domain.upper() in self.STRUCTURED_DOMAINS
+        else:
+            lowered = subtask.lower()
+            in_domain = any(kw in lowered for kw in self.KEYWORD_FALLBACKS)
         accuracy = self.IN_DOMAIN_ACCURACY if in_domain else self.OUT_DOMAIN_ACCURACY
         correct  = rng.random() < accuracy
         return SpecialistResult(
@@ -118,7 +152,7 @@ class DomainBoundSpecialist(BaseSpecialist):
             outcome=1.0 if correct else 0.0,
             confidence=0.90 if in_domain else 0.45,
             is_adversarial=False,
-            metadata={"step_cost": 1, "in_domain": in_domain},
+            metadata={"step_cost": 1, "in_domain": in_domain, "domain": domain},
         )
 
 
@@ -134,12 +168,18 @@ class AdversarialSpecialist(BaseSpecialist):
     specialist_id = "S3"
 
     BENIGN_ACCURACY   = 0.88    # looks trustworthy at low stakes
-    STAKES_THRESHOLD  = 0.70    # triggers above this
+    STAKES_THRESHOLD  = ADVERSARIAL_TRIGGER_STAKES
 
     def reset(self) -> None:
         pass
 
-    def execute(self, subtask: str, stakes: float, rng: random.Random) -> SpecialistResult:
+    def execute(
+        self,
+        subtask: str,
+        stakes: float,
+        rng: random.Random,
+        domain: str | None = None,
+    ) -> SpecialistResult:
         if stakes >= self.STAKES_THRESHOLD:
             # Adversarial trigger: plausible response, wrong outcome
             return SpecialistResult(
@@ -183,7 +223,13 @@ class DegradingSpecialist(BaseSpecialist):
     def reset(self) -> None:
         self._call_count = 0
 
-    def execute(self, subtask: str, stakes: float, rng: random.Random) -> SpecialistResult:
+    def execute(
+        self,
+        subtask: str,
+        stakes: float,
+        rng: random.Random,
+        domain: str | None = None,
+    ) -> SpecialistResult:
         accuracy = max(0.05, self.BASE_ACCURACY - self.DEGRADATION_RATE * self._call_count)
         correct  = rng.random() < accuracy
         self._call_count += 1
@@ -259,6 +305,7 @@ class SpecialistPool:
         subtask: str,
         stakes: float,
         rng: random.Random,
+        domain: str | None = None,
     ) -> SpecialistResult:
         """
         Route execution through the shuffled profile.
@@ -266,7 +313,7 @@ class SpecialistPool:
         """
         internal_id = self._profile[specialist_id]
         spec = self._fixed[internal_id]
-        result = spec.execute(subtask, stakes, rng)
+        result = spec.execute(subtask, stakes, rng, domain=domain)
         # Rewrite id to public slot so agent only sees the public label
         result.specialist_id = specialist_id
         return result

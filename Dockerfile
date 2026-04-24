@@ -27,6 +27,7 @@ COPY trust_ledger.py .
 COPY task_graph.py .
 COPY comms_bus.py .
 COPY mission_context.py .
+COPY sentinel_config.py .
 COPY scenarios.py .
 COPY openenv.yaml .
 COPY inference.py .

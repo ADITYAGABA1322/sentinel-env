@@ -21,6 +21,7 @@ if str(ROOT) not in sys.path:
 
 from environment import SentinelEnv
 from mission_context import build_orchestrator_prompt
+from sentinel_config import ADVERSARIAL_AWARENESS_STAKES
 
 
 ACTION_RE = re.compile(r"\{.*\}", re.DOTALL)
@@ -127,7 +128,11 @@ def dry_run_rollouts(episodes: int, seed: int) -> dict:
             action = {
                 "session_id": obs["session_id"],
                 "task_type": obs["task_type"],
-                "action_type": "verify" if obs["stakes_level"] >= 0.70 and rng.random() < 0.5 else "delegate",
+                "action_type": (
+                    "verify"
+                    if obs["stakes_level"] >= ADVERSARIAL_AWARENESS_STAKES and rng.random() < 0.5
+                    else "delegate"
+                ),
                 "specialist_id": specialist,
                 "subtask_response": None,
                 "reasoning": "dry-run heuristic",

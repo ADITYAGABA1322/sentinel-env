@@ -14,6 +14,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from environment import SentinelEnv, _GROUND_TRUTH_RELIABILITY
+from sentinel_config import ADVERSARIAL_AWARENESS_STAKES
 
 
 Policy = Callable[[SentinelEnv, dict, random.Random], dict]
@@ -40,13 +41,17 @@ def random_policy(env: SentinelEnv, obs: dict, rng: random.Random) -> dict:
 def heuristic_policy(env: SentinelEnv, obs: dict, rng: random.Random) -> dict:
     trust = obs["trust_snapshot"]
     specialist = max(obs["available_specialists"], key=lambda sid: trust.get(sid, 0.5))
-    action_type = "verify" if obs["stakes_level"] >= 0.70 and trust.get(specialist, 0.5) < 0.65 else "delegate"
+    action_type = (
+        "verify"
+        if obs["stakes_level"] >= ADVERSARIAL_AWARENESS_STAKES and trust.get(specialist, 0.5) < 0.65
+        else "delegate"
+    )
     return _action(obs, action_type, specialist)
 
 
 def oracle_lite_policy(env: SentinelEnv, obs: dict, rng: random.Random) -> dict:
     reliability = env._pool.public_ground_truth_reliability(_GROUND_TRUTH_RELIABILITY)
-    if obs["task_type"] == "task3" and obs["stakes_level"] >= 0.70:
+    if obs["task_type"] == "task3" and obs["stakes_level"] >= ADVERSARIAL_AWARENESS_STAKES:
         return _action(obs, "verify", env._pool.adversarial_slot)
     specialist = max(obs["available_specialists"], key=lambda sid: reliability.get(sid, 0.5))
     return _action(obs, "delegate", specialist)

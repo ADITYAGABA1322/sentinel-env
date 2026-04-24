@@ -10,6 +10,7 @@ from graders import (
     grade_task3_step, grade_task3_terminal,
 )
 from scenarios import sample_scenario, get_scenario, Scenario
+from sentinel_config import CRITICAL_POISON_STAKES, VERIFY_EXTRA_STEP_COST
 from specialists import SpecialistPool
 from task_graph import TaskGraph
 from trust_ledger import TrustLedger
@@ -171,19 +172,34 @@ class SentinelEnv:
 
         elif action_type == "verify":
             # First get result, then verify (costs +1 step)
-            result = self._pool.execute(specialist_id, subtask["description"], stakes, self._rng)
-            step_cost       = int(result.metadata.get("step_cost", 1)) + 1
+            result = self._pool.execute(
+                specialist_id,
+                subtask["description"],
+                stakes,
+                self._rng,
+                domain=subtask.get("domain"),
+            )
+            step_cost       = int(result.metadata.get("step_cost", 1)) + VERIFY_EXTRA_STEP_COST
             outcome         = result.outcome if not result.is_adversarial else 0.0
             was_adversarial  = result.is_adversarial
             # Verification means agent caught adversarial — treat as detection
             if result.is_adversarial:
                 outcome = 1.0   # successfully avoided
             self._graph.record_outcome(subtask["id"], outcome, specialist_id, was_adversarial)
+            # Important: trust must learn from the specialist's raw answer, not
+            # from the corrected/avoided graph outcome. If S0 was caught lying,
+            # the task node is safe, but S0's trust should still drop.
             self._ledger.update(specialist_id, result.outcome, stakes)
             self.last_action_summary = f"Verified {specialist_id} on {subtask['id']}"
 
         else:  # delegate
-            result          = self._pool.execute(specialist_id, subtask["description"], stakes, self._rng)
+            result          = self._pool.execute(
+                specialist_id,
+                subtask["description"],
+                stakes,
+                self._rng,
+                domain=subtask.get("domain"),
+            )
             step_cost       = int(result.metadata.get("step_cost", 1))
             was_adversarial  = result.is_adversarial
             outcome         = 0.0 if was_adversarial else result.outcome
@@ -206,7 +222,7 @@ class SentinelEnv:
         # --- Check episode end ---
         all_done    = self._graph.is_done()
         budget_gone = self.step_count >= self.max_steps
-        poisoned    = was_adversarial and action_type == "delegate" and stakes >= 0.85
+        poisoned    = was_adversarial and action_type == "delegate" and stakes >= CRITICAL_POISON_STAKES
 
         if all_done or budget_gone or poisoned:
             # Emit terminal reward on top of step reward
@@ -394,7 +410,13 @@ class SentinelEnv:
         )
 
     def normalized_score(self) -> float:
-        """Episode score normalized to 0.0-1.0 for judging logs."""
+        """
+        Mean reward over emitted grading events, normalized to 0.0-1.0.
+
+        This is intentionally not a cumulative return. The terminal reward and
+        efficiency terms already penalize unfinished or wasteful episodes, while
+        this scalar stays comparable across tasks with different horizons.
+        """
         if self.reward_events <= 0:
             return 0.0
         return max(0.0, min(1.0, self.total_reward / self.reward_events))
