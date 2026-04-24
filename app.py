@@ -10,6 +10,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel
 
 from environment import SentinelEnv
+from mission_context import build_orchestrator_prompt, mission_for_task, problem_statement
 from scenarios import scenario_summary
 
 # ---------------------------------------------------------------------------
@@ -84,7 +85,10 @@ def root():
                 "SENTINEL trains an orchestrator to calibrate trust, verify risky "
                 "outputs, recover from failures, and finish long multi-agent tasks."
             ),
-            "routes": ["/health", "/metadata", "/tasks", "/schema", "/grader", "/reset", "/step", "/state"],
+            "routes": [
+                "/health", "/problem", "/mission", "/metadata", "/tasks", "/schema",
+                "/grader", "/reset", "/step", "/state",
+            ],
         }
     )
 
@@ -114,7 +118,29 @@ def api_root():
             "SENTINEL trains an orchestrator to calibrate trust, verify risky "
             "outputs, recover from failures, and finish long multi-agent tasks."
         ),
-        "routes": ["/health", "/metadata", "/tasks", "/schema", "/grader", "/reset", "/step", "/state"],
+        "routes": [
+            "/health", "/problem", "/mission", "/metadata", "/tasks", "/schema",
+            "/grader", "/reset", "/step", "/state",
+        ],
+    }
+
+
+@app.get("/problem")
+def problem():
+    """Judge-readable explanation of what the environment solves."""
+    return problem_statement()
+
+
+@app.get("/mission")
+def mission(task_type: str = Query("task3", pattern="^task[123]$")):
+    """Real-world wrapper for each abstract OpenEnv task."""
+    return {
+        "task_type": task_type,
+        "mission": mission_for_task(task_type),
+        "how_to_use": (
+            "Call /reset to get an observation, then ask an orchestrator model to "
+            "emit one JSON action for /step."
+        ),
     }
 
 
@@ -135,6 +161,7 @@ def metadata():
         "action_types": ["delegate", "verify", "solve_independently", "skip"],
         "scenarios": summary,
         "reward_range": "(0.01, 0.99) boundary-exclusive",
+        "real_world_bridge": problem_statement()["problem"]["not_a_simple_prompt_solver"],
     }
 
 
@@ -146,18 +173,21 @@ def tasks():
             "description": "10-subtask linear chain. Choose which specialist to delegate each subtask to.",
             "adversary_active": False,
             "reward": "0.99 correct delegation + stakes awareness | 0.02 skip",
+            "mission": mission_for_task("task1"),
         },
         "task2": {
             "difficulty": "medium",
             "description": "15-subtask branching DAG. Build trust profile across honest specialists.",
             "adversary_active": False,
             "reward": "0.99 completion × calibration bonus",
+            "mission": mission_for_task("task2"),
         },
         "task3": {
             "difficulty": "hard",
             "description": "20-subtask full DAG. Adversarial specialist active. Detect and route around poison.",
             "adversary_active": True,
             "reward": "0.35×completion + 0.30×detection + 0.25×calibration + 0.10×efficiency",
+            "mission": mission_for_task("task3"),
         },
     }
 
@@ -198,6 +228,8 @@ def reset(req: ResetRequest = ResetRequest()):
     )
     session_id = result["info"]["session_id"]
     _sessions[session_id] = env
+    result["info"]["mission"] = mission_for_task(result["observation"]["task_type"])
+    result["info"]["orchestrator_prompt"] = build_orchestrator_prompt(result["observation"])
     return result
 
 
@@ -212,6 +244,8 @@ def step(req: StepRequest, session_id: str = Query(...)):
     # Clean up completed sessions to avoid memory leak
     if result["done"]:
         _sessions.pop(session_id, None)
+    else:
+        result["info"]["orchestrator_prompt"] = build_orchestrator_prompt(result["observation"])
 
     return result
 

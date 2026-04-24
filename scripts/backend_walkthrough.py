@@ -13,6 +13,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from environment import SentinelEnv, _GROUND_TRUTH_RELIABILITY
+from mission_context import build_orchestrator_prompt, mission_for_task, problem_statement
 
 
 Policy = Callable[[SentinelEnv, dict, random.Random], dict]
@@ -122,6 +123,12 @@ def run_episode(
     print("RESET JSON - compact agent-facing shape")
     print(json.dumps(compact_reset(result), indent=2))
     print()
+    print("LLM ORCHESTRATOR PROMPT - first 28 lines")
+    prompt_lines = build_orchestrator_prompt(result["observation"]).splitlines()
+    print("\n".join(prompt_lines[:28]))
+    if len(prompt_lines) > 28:
+        print("...")
+    print()
     if show_hidden:
         print("BUILDER-ONLY HIDDEN PROFILE - agent never sees this")
         print(json.dumps({
@@ -169,15 +176,21 @@ def run_episode(
 
 
 def print_header(policy_name: str, task_type: str, seed: int) -> None:
+    problem = problem_statement()["problem"]
+    mission = mission_for_task(task_type)
     print("=" * 92)
     print("SENTINEL BACKEND WALKTHROUGH")
     print("=" * 92)
     print(f"policy={policy_name} task={task_type} seed={seed}")
     print()
+    print("REAL USER PROMPT EXAMPLE")
+    print(problem["real_user_prompt_example"])
+    print()
     print("REAL-WORLD MAPPING")
-    print("User gives a long task -> orchestrator splits it -> specialists answer subtasks.")
-    print("Some specialists are unreliable: fast-but-wrong, domain-limited, degrading, or adversarial.")
-    print("SENTINEL trains the orchestrator behavior: trust, verify, recover, finish.")
+    print(problem["not_a_simple_prompt_solver"])
+    print(f"Task mission: {mission['judge_friendly_story']}")
+    print("The JSON action is the next internal control move, not the final user answer.")
+    print("SENTINEL trains the transferable behavior: trust, verify, recover, finish.")
     print()
 
 
@@ -201,10 +214,12 @@ def print_trace_row(row: TraceRow) -> None:
 
 
 def compare_policies(task_type: str, seed: int, show_hidden: bool) -> None:
+    mission = mission_for_task(task_type)
     print("=" * 92)
     print("BEFORE / AFTER BACKEND COMPARISON")
     print("=" * 92)
     print("before=blind trust, middle=heuristic trust, target=oracle-lite upper bound")
+    print(f"mission={mission['name']} - {mission['real_life_example']}")
     print()
     results = []
     for policy_name in ("blind", "heuristic", "oracle"):

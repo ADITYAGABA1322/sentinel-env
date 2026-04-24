@@ -33,6 +33,35 @@ Modern agent systems fail in the same pattern:
 
 SENTINEL turns that failure mode into a trainable environment. The model only sees behavior: returned outcomes, confidence, stakes, history, and trust scores. It never sees hidden specialist identities.
 
+## Real-World Bridge
+
+SENTINEL is not a normal chatbot that answers one prompt. It is the training ground for the hidden control loop inside a long-running agent.
+
+Example user mission:
+
+```text
+Refactor this project, inspect failures, route work to code/test/security agents,
+fix the risky parts, and prepare it for deployment.
+```
+
+What SENTINEL abstracts:
+
+1. The user mission becomes a scenario with a task graph.
+2. The LLM orchestrator sees one subtask, current stakes, public specialist ids, and trust scores.
+3. The model emits one control action: `delegate`, `verify`, `solve_independently`, or `skip`.
+4. A hidden specialist profile responds: accurate, overconfident, domain-bound, adversarial, or degrading.
+5. The reward engine scores the action and the trust ledger updates.
+6. GRPO/TRL uses that reward to train better orchestration behavior.
+
+This is why the project matters for real agents: after many long user requests, the failure is often not "the LLM cannot speak." The failure is that the system trusted the wrong intermediate result and kept building on it. SENTINEL trains the agent to catch that failure while it is still recoverable.
+
+Judge-readable endpoints:
+
+```bash
+curl http://localhost:7860/problem
+curl "http://localhost:7860/mission?task_type=task3"
+```
+
 ## Environment Shape
 
 - API: `reset()`, `step(action)`, `state()`
@@ -91,6 +120,8 @@ The episode `score` exposed in `info` and inference logs is normalized to `0.0-1
 curl http://localhost:7860/health
 curl http://localhost:7860/
 curl http://localhost:7860/api
+curl http://localhost:7860/problem
+curl "http://localhost:7860/mission?task_type=task3"
 curl http://localhost:7860/metadata
 curl http://localhost:7860/tasks
 curl http://localhost:7860/schema
@@ -111,6 +142,7 @@ python scripts/backend_walkthrough.py --task task3 --seed 42 --policy heuristic 
 This prints the full backend story:
 
 - the compact `/reset` JSON the orchestrator sees
+- the exact LLM orchestrator prompt used by the training harness
 - the hidden shuffled profile for builders only
 - each action, reward, score, trust update, detection, and poisoning count
 - a before/after comparison of blind trust vs trust-aware routing vs oracle-lite upper bound
@@ -210,7 +242,7 @@ pip install pytest
 Run checks:
 
 ```bash
-python -m py_compile app.py server/app.py environment.py models.py graders.py specialists.py trust_ledger.py task_graph.py scenarios.py inference.py comms_bus.py training/evaluate.py training/train.py scripts/backend_walkthrough.py
+python -m py_compile app.py server/app.py environment.py models.py graders.py specialists.py trust_ledger.py task_graph.py scenarios.py inference.py comms_bus.py mission_context.py training/evaluate.py training/train.py scripts/backend_walkthrough.py
 python -m pytest -q
 python inference.py
 python training/evaluate.py --episodes 20 --task all --plot outputs/baseline_comparison.png

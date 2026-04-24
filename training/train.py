@@ -20,21 +20,14 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from environment import SentinelEnv
+from mission_context import build_orchestrator_prompt
 
 
 ACTION_RE = re.compile(r"\{.*\}", re.DOTALL)
 
 
 def build_prompt(observation: dict) -> str:
-    return (
-        "You are the SENTINEL orchestrator. Choose one JSON action.\n"
-        f"Task: {observation['task_type']}\n"
-        f"Subtask: {observation['current_subtask']}\n"
-        f"Stakes: {observation['stakes_level']:.2f}\n"
-        f"Trust: {json.dumps(observation['trust_snapshot'], sort_keys=True)}\n"
-        "Valid action_type values: delegate, verify, solve_independently, skip.\n"
-        "Return JSON with action_type and optional specialist_id."
-    )
+    return build_orchestrator_prompt(observation)
 
 
 def build_dataset_records(episodes: int, task_type: str, seed: int) -> list[dict]:
