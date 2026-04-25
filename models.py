@@ -53,6 +53,8 @@ class SentinelObservation(BaseModel):
     subtasks_remaining: int
     available_specialists: list[str]       # specialist ids visible to agent
     trust_snapshot: dict[str, float]       # {"S0": 0.82, "S1": 0.31, ...}
+    behavioral_fingerprints: dict[str, dict[str, Any]] | None = None
+    difficulty_profile: dict[str, Any] | None = None
     stakes_level: float                    # 0.0–1.0; high = adversary may trigger
     step_count: int
     max_steps: int
@@ -132,6 +134,8 @@ class SentinelState(BaseModel):
     subtasks_completed: int
     subtasks_total: int
     trust_snapshot: dict[str, float]
+    behavioral_fingerprints: dict[str, dict[str, Any]] | None = None
+    difficulty_profile: dict[str, Any] | None = None
     adversarial_detections: int           # how many adversarial attempts caught
     adversarial_poisonings: int           # how many slipped through
 

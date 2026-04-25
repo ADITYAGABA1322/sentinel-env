@@ -150,6 +150,8 @@ def build_orchestrator_prompt(observation: dict[str, Any]) -> str:
     task_type = str(observation.get("task_type", "task3"))
     mission = mission_for_task(task_type)
     trust = observation.get("trust_snapshot", {})
+    fingerprints = observation.get("behavioral_fingerprints", {})
+    difficulty_profile = observation.get("difficulty_profile", {})
     specialists = observation.get("available_specialists", ["S0", "S1", "S2", "S3", "S4"])
     steps_remaining = int(observation.get("max_steps", 0)) - int(observation.get("step_count", 0))
 
@@ -170,6 +172,8 @@ def build_orchestrator_prompt(observation: dict[str, Any]) -> str:
         f"(remaining: {steps_remaining})\n"
         f"Available public specialists: {', '.join(specialists)}\n"
         f"Trust snapshot: {json.dumps(trust, sort_keys=True)}\n"
+        f"Behavioral fingerprints: {json.dumps(fingerprints, sort_keys=True)}\n"
+        f"Difficulty profile: {json.dumps(difficulty_profile, sort_keys=True)}\n"
         "\n"
         "Important rules:\n"
         "- Public specialist ids are shuffled every episode; never memorize S0/S1/S2/S3/S4.\n"
@@ -184,4 +188,3 @@ def build_orchestrator_prompt(observation: dict[str, Any]) -> str:
         '{"action_type":"verify","specialist_id":"S0","reasoning":"high-stakes step; verify before accepting"}\n'
         '{"action_type":"solve_independently","reasoning":"all specialists look unsafe"}\n'
     )
-

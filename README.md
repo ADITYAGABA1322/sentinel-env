@@ -71,6 +71,8 @@ curl "http://localhost:7860/mission?task_type=task3"
 - Rewards: per-step reward plus terminal score, normalized to `0.0-1.0`
 - Dataset: 120 abstract multi-agent scenarios
 - Session store: single-process memory with TTL/LRU cleanup
+- Optional adaptive curriculum: pass `adaptive=true` on `/reset` for Theme 4 demos
+- Live trust stream: `/stream?session_id=...` feeds the `/trust-dashboard` bars
 
 Deployment contract: run one server worker for the submitted Space. Active `SentinelEnv` objects live in process memory, so multi-worker deployments need sticky sessions or a shared store such as Redis. The Dockerfile intentionally starts uvicorn with `--workers 1`.
 
@@ -124,6 +126,29 @@ Task 3 terminal score:
 
 The episode `score` exposed in `info` and inference logs is the mean reward over emitted grading events, normalized to `0.0-1.0`. It is intentionally not raw cumulative return; terminal reward and efficiency terms carry the penalty for unfinished or wasteful episodes while keeping scores comparable across tasks with different horizons.
 
+## WOW Factor Features
+
+SENTINEL now includes three judge-facing upgrades:
+
+1. **Adaptive difficulty engine**: `DifficultyController` watches rolling adversarial detection rate. Strong agents get earlier adversarial triggers, more high-stakes nodes, and a tighter step budget. Struggling agents get easier episodes. Enable it with:
+
+```bash
+curl -X POST http://localhost:7860/reset \
+  -H "Content-Type: application/json" \
+  -d '{"task_type":"task3","seed":42,"adaptive":true}'
+```
+
+2. **Behavioral fingerprints**: every observation includes `behavioral_fingerprints` for S0-S4:
+
+- `confidence_accuracy_gap`
+- `domain_hit_rate`
+- `stakes_volatility`
+- low/high stakes accuracy
+
+These are public behavioral signals only. They do not leak the hidden specialist identity.
+
+3. **Live trust stream**: `/stream?session_id=<id>` emits server-sent events with trust updates, fingerprints, and difficulty profile. Open `/trust-dashboard?session_id=<id>` during a demo to watch the trust bars update live.
+
 ## API
 
 ```bash
@@ -135,11 +160,27 @@ curl "http://localhost:7860/mission?task_type=task3"
 curl http://localhost:7860/metadata
 curl http://localhost:7860/tasks
 curl http://localhost:7860/schema
+curl http://localhost:7860/difficulty
 ```
 
 The root route `/` serves the live SENTINEL dashboard on Hugging Face Spaces.
 Use `/api` for the JSON route index.
 Use `/assets/baseline_comparison.png` for the committed baseline chart used in the dashboard.
+
+Live stream demo:
+
+```bash
+# Terminal 1
+uvicorn app:app --host 0.0.0.0 --port 7860
+
+# Terminal 2: create a session and copy session_id
+curl -s -X POST http://localhost:7860/reset \
+  -H "Content-Type: application/json" \
+  -d '{"task_type":"task3","seed":42,"adaptive":true}' | python -m json.tool
+
+# Browser
+open "http://localhost:7860/trust-dashboard?session_id=<session_id>"
+```
 
 ## Backend Walkthrough
 
@@ -158,6 +199,13 @@ This prints the full backend story:
 - a before/after comparison of blind trust vs trust-aware routing vs oracle-lite upper bound
 
 The key scenario to understand is `task3, seed=42`: public slot `S0` is secretly adversarial. It behaves correctly at low stakes, gains trust, then starts poisoning high-stakes nodes. SENTINEL exists to train the orchestrator to catch that shift.
+
+Adaptive evaluation:
+
+```bash
+python training/evaluate.py --episodes 100 --task task3 --adaptive --reset-difficulty \
+  --plot outputs/task3_adaptive_comparison.png
+```
 
 ## Live Dashboard
 

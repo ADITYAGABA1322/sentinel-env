@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import asyncio
+import html
+import json
 import os
 import time
 from collections import OrderedDict
@@ -10,9 +13,10 @@ from typing import Any
 
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, StreamingResponse
 from pydantic import BaseModel
 
+from difficulty_controller import GLOBAL_DIFFICULTY_CONTROLLER
 from environment import SentinelEnv
 from mission_context import build_orchestrator_prompt, mission_for_task, problem_statement
 from scenarios import scenario_summary
@@ -123,6 +127,7 @@ class ResetRequest(BaseModel):
     task_type:   str | None = None
     scenario_id: str | None = None
     seed:        int | None = None
+    adaptive:    bool = False
 
 class StepRequest(BaseModel):
     session_id:       str
@@ -165,7 +170,8 @@ def root():
             ),
             "routes": [
                 "/health", "/problem", "/mission", "/metadata", "/tasks", "/schema",
-                "/grader", "/reset", "/step", "/state",
+                "/grader", "/difficulty", "/stream", "/trust-dashboard",
+                "/reset", "/step", "/state",
             ],
         }
     )
@@ -198,7 +204,8 @@ def api_root():
         ),
         "routes": [
             "/health", "/problem", "/mission", "/metadata", "/tasks", "/schema",
-            "/grader", "/reset", "/step", "/state",
+            "/grader", "/difficulty", "/stream", "/trust-dashboard",
+            "/reset", "/step", "/state",
         ],
     }
 
@@ -239,6 +246,13 @@ def metadata():
         "action_types": ["delegate", "verify", "solve_independently", "skip"],
         "scenarios": summary,
         "reward_range": "(0.01, 0.99) boundary-exclusive",
+        "observation_features": [
+            "trust_snapshot",
+            "behavioral_fingerprints.confidence_accuracy_gap",
+            "behavioral_fingerprints.domain_hit_rate",
+            "behavioral_fingerprints.stakes_volatility",
+            "difficulty_profile",
+        ],
         "real_world_bridge": problem_statement()["problem"]["not_a_simple_prompt_solver"],
         "deployment_contract": {
             "session_backend": SESSION_BACKEND,
@@ -247,6 +261,7 @@ def metadata():
             "ttl_seconds": SESSION_TTL_SECONDS,
             "max_active_sessions": SESSION_MAX_ACTIVE,
         },
+        "adaptive_curriculum": GLOBAL_DIFFICULTY_CONTROLLER.state(),
     }
 
 
@@ -303,6 +318,45 @@ def grader():
     }
 
 
+@app.get("/difficulty")
+def difficulty():
+    return {
+        "controller": GLOBAL_DIFFICULTY_CONTROLLER.state(),
+        "how_to_enable": "POST /reset with {\"task_type\":\"task3\",\"adaptive\":true}.",
+    }
+
+
+@app.post("/difficulty/reset")
+def reset_difficulty():
+    GLOBAL_DIFFICULTY_CONTROLLER.reset()
+    return {"controller": GLOBAL_DIFFICULTY_CONTROLLER.state()}
+
+
+@app.get("/stream")
+async def stream(session_id: str = Query(...)):
+    async def event_gen():
+        while True:
+            env = _sessions.get(session_id)
+            if env is None:
+                yield "event: close\ndata: {\"reason\":\"session_not_found\"}\n\n"
+                break
+            yield f"data: {json.dumps(env.stream_snapshot())}\n\n"
+            if env.done:
+                break
+            await asyncio.sleep(0.5)
+
+    return StreamingResponse(
+        event_gen(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
+
+
+@app.get("/trust-dashboard")
+def trust_dashboard(session_id: str = Query("")):
+    return HTMLResponse(_trust_dashboard_html(session_id))
+
+
 @app.post("/reset")
 def reset(req: ResetRequest = ResetRequest()):
     env = SentinelEnv()
@@ -310,6 +364,7 @@ def reset(req: ResetRequest = ResetRequest()):
         task_type=req.task_type,
         scenario_id=req.scenario_id,
         seed=req.seed,
+        adaptive=req.adaptive,
     )
     session_id = result["info"]["session_id"]
     _sessions.set(session_id, env)
@@ -376,6 +431,100 @@ def mcp(body: dict[str, Any]):
 
     else:
         raise HTTPException(status_code=400, detail=f"Unknown method: {method}")
+
+
+def _trust_dashboard_html(session_id: str) -> str:
+    escaped_session = html.escape(session_id, quote=True)
+    return f"""<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SENTINEL Trust Dashboard</title>
+  <style>
+    :root {{
+      color-scheme: dark;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #0b0f14;
+      color: #e5eef8;
+    }}
+    body {{ margin: 0; min-height: 100vh; display: grid; place-items: center; background: #0b0f14; }}
+    main {{ width: min(1040px, calc(100vw - 32px)); }}
+    header {{ display: flex; justify-content: space-between; gap: 24px; align-items: end; margin-bottom: 28px; }}
+    h1 {{ margin: 0; font-size: clamp(28px, 5vw, 56px); letter-spacing: 0; }}
+    p {{ color: #94a3b8; line-height: 1.6; margin: 8px 0 0; max-width: 640px; }}
+    input {{ width: 360px; max-width: 100%; background: #111827; color: #e5eef8; border: 1px solid #263241; border-radius: 8px; padding: 11px 12px; }}
+    button {{ background: #e5eef8; color: #0b0f14; border: 0; border-radius: 8px; padding: 11px 14px; font-weight: 700; cursor: pointer; }}
+    .controls {{ display: flex; gap: 8px; flex-wrap: wrap; justify-content: end; }}
+    .panel {{ border: 1px solid #223043; background: #0f1722; border-radius: 8px; padding: 24px; box-shadow: 0 24px 80px rgba(0,0,0,.32); }}
+    .bar {{ display: grid; grid-template-columns: 56px 1fr 74px; align-items: center; gap: 16px; margin: 18px 0; }}
+    .id {{ font-weight: 800; font-size: 22px; }}
+    .track {{ height: 28px; background: #182231; border-radius: 6px; overflow: hidden; border: 1px solid #263241; }}
+    .fill {{ height: 100%; width: 50%; background: linear-gradient(90deg, #ef4444, #f59e0b, #10b981); transition: width .35s ease; }}
+    .score {{ font-variant-numeric: tabular-nums; text-align: right; color: #d9f99d; font-size: 22px; font-weight: 800; }}
+    .meta {{ display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 22px; }}
+    .stat {{ border: 1px solid #223043; background: #0b111a; border-radius: 8px; padding: 14px; }}
+    .label {{ color: #94a3b8; font-size: 12px; text-transform: uppercase; letter-spacing: .08em; }}
+    .value {{ margin-top: 8px; font-size: 18px; font-weight: 800; }}
+    @media (max-width: 760px) {{
+      header, .meta {{ display: block; }}
+      .controls {{ justify-content: stretch; margin-top: 18px; }}
+      input, button {{ width: 100%; }}
+      .stat {{ margin-top: 12px; }}
+    }}
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div>
+        <h1>SENTINEL Live Trust</h1>
+        <p>Watch the orchestrator's trust ledger move in real time as specialists prove reliable, degrade, or get caught poisoning high-stakes work.</p>
+      </div>
+      <div class="controls">
+        <input id="sid" placeholder="session_id" value="{escaped_session}" />
+        <button onclick="connect()">Connect</button>
+      </div>
+    </header>
+    <section class="panel" id="bars"></section>
+  </main>
+  <script>
+    const ids = ["S0", "S1", "S2", "S3", "S4"];
+    const bars = document.getElementById("bars");
+    bars.innerHTML = ids.map(id => `
+      <div class="bar">
+        <div class="id">${{id}}</div>
+        <div class="track"><div class="fill" id="fill-${{id}}"></div></div>
+        <div class="score" id="score-${{id}}">0.500</div>
+      </div>
+    `).join("") + `
+      <div class="meta">
+        <div class="stat"><div class="label">step</div><div class="value" id="step">0 / 0</div></div>
+        <div class="stat"><div class="label">last reward</div><div class="value" id="reward">0.000</div></div>
+        <div class="stat"><div class="label">adaptive threshold</div><div class="value" id="threshold">0.700</div></div>
+      </div>`;
+    let source = null;
+    function connect() {{
+      if (source) source.close();
+      const sid = document.getElementById("sid").value.trim();
+      if (!sid) return;
+      source = new EventSource(`/stream?session_id=${{encodeURIComponent(sid)}}`);
+      source.onmessage = event => {{
+        const data = JSON.parse(event.data);
+        ids.forEach(id => {{
+          const value = data.trust_snapshot?.[id] ?? 0.5;
+          document.getElementById(`fill-${{id}}`).style.width = `${{Math.round(value * 100)}}%`;
+          document.getElementById(`score-${{id}}`).textContent = Number(value).toFixed(3);
+        }});
+        document.getElementById("step").textContent = `${{data.step_count}} / ${{data.max_steps}}`;
+        document.getElementById("reward").textContent = Number(data.last_reward || 0).toFixed(3);
+        document.getElementById("threshold").textContent = Number(data.difficulty_profile?.adversarial_threshold || 0.7).toFixed(3);
+      }};
+    }}
+    if (document.getElementById("sid").value.trim()) connect();
+  </script>
+</body>
+</html>"""
 
 
 # ---------------------------------------------------------------------------
