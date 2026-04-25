@@ -1,0 +1,98 @@
+.DS_Store
+# =========================
+# ENV AND SECRETS
+# =========================
+.env
+.env.*
+*.env
+!.env.example
+
+# =========================
+# PYTHON
+# =========================
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pyc.*
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+venv/
+env/
+.venv/
+
+# =========================
+# LOG FILES
+# =========================
+*.log
+logs.jsonl
+outputs/*
+!outputs/baseline_comparison.png
+!outputs/baseline_scores.json
+!outputs/evaluation_results.json
+
+# =========================
+# OS FILES
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# IDE / EDITOR
+# =========================
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# =========================
+# MODEL / DATA FILES
+# =========================
+*.onnx
+*.pt
+*.pth
+*.ckpt
+*.h5
+
+# Large datasets (customize if needed)
+data/
+datasets/
+
+# =========================
+# BUILD / OUTPUT
+# =========================
+dist/
+build/
+out/
+ui/node_modules/
+ui/.next/
+ui/out/
+
+# =========================
+# TEMP FILES
+# =========================
+*.tmp
+*.temp
+.cache/
+.pycache/
+
+# =========================
+# TEST / COVERAGE
+# =========================
+coverage/
+.nyc_output/
+
+# =========================
+# DOCKER (optional)
+# =========================
+*.pid
+*.seed
+
+# =========================
+# MISC
+# =========================
+*.bak
+*.old

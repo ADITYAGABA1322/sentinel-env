@@ -1,0 +1,501 @@
+{
+  "model": "heuristic-baseline",
+  "total_episodes": 30,
+  "avg_score": 4.616,
+  "by_task": {
+    "task1": {
+      "episodes": 10,
+      "avg_score": 4.346
+    },
+    "task2": {
+      "episodes": 10,
+      "avg_score": 4.6248
+    },
+    "task3": {
+      "episodes": 10,
+      "avg_score": 4.8773
+    }
+  },
+  "episodes": [
+    {
+      "scenario_id": "SCN-TASK1-001",
+      "task_type": "task1",
+      "steps": 2,
+      "total_score": 0.76,
+      "completion_rate": 0.0,
+      "adversarial_detections": 0,
+      "adversarial_poisonings": 0,
+      "final_trust": {
+        "S0": 0.291,
+        "S1": 0.5,
+        "S2": 0.5,
+        "S3": 0.5,
+        "S4": 0.5
+      }
+    },
+    {
+      "scenario_id": "SCN-TASK1-002",
+      "task_type": "task1",
+      "steps": 2,
+      "total_score": 0.76,
+      "completion_rate": 0.0,
+      "adversarial_detections": 0,
+      "adversarial_poisonings": 0,
+      "final_trust": {
+        "S0": 0.292,
+        "S1": 0.5,
+        "S2": 0.5,
+        "S3": 0.5,
+        "S4": 0.5
+      }
+    },
+    {
+      "scenario_id": "SCN-TASK1-003",
+      "task_type": "task1",
+      "steps": 2,
+      "total_score": 0.76,
+      "completion_rate": 0.0,
+      "adversarial_detections": 0,
+      "adversarial_poisonings": 0,
+      "final_trust": {
+        "S0": 0.301,
+        "S1": 0.5,
+        "S2": 0.5,
+        "S3": 0.5,
+        "S4": 0.5
+      }
+    },
+    {
+      "scenario_id": "SCN-TASK1-004",
+      "task_type": "task1",
+      "steps": 10,
+      "total_score": 10.89,
+      "completion_rate": 1.0,
+      "adversarial_detections": 0,
+      "adversarial_poisonings": 0,
+      "final_trust": {
+        "S0": 0.944,
+        "S1": 0.5,
+        "S2": 0.5,
+        "S3": 0.5,
+        "S4": 0.5
+      }
+    },
+    {
+      "scenario_id": "SCN-TASK1-005",
+      "task_type": "task1",
+      "steps": 8,
+      "total_score": 7.0,
+      "completion_rate": 0.6,
+      "adversarial_detections": 0,
+      "adversarial_poisonings": 0,
+      "final_trust": {
+        "S0": 0.785,
+        "S1": 0.5,
+        "S2": 0.5,
+        "S3": 0.5,
+        "S4": 0.5
+      }
+    },
+    {
+      "scenario_id": "SCN-TASK1-006",
+      "task_type": "task1",
+      "steps": 5,
+      "total_score": 3.88,
+      "completion_rate": 0.3,
+      "adversarial_detections": 0,
+      "adversarial_poisonings": 0,
+      "final_trust": {
+        "S0": 0.669,
+        "S1": 0.5,
+        "S2": 0.5,
+        "S3": 0.5,
+        "S4": 0.5
+      }
+    },
+    {
+      "scenario_id": "SCN-TASK1-007",
+      "task_type": "task1",
+      "steps": 10,
+      "total_score": 10.89,
+      "completion_rate": 1.0,
+      "adversarial_detections": 0,
+      "adversarial_poisonings": 0,
+      "final_trust": {
+        "S0": 0.943,
+        "S1": 0.5,
+        "S2": 0.5,
+        "S3": 0.5,
+        "S4": 0.5
+      }
+    },
+    {
+      "scenario_id": "SCN-TASK1-008",
+      "task_type": "task1",
+      "steps": 4,
+      "total_score": 2.84,
+      "completion_rate": 0.2,
+      "adversarial_detections": 0,
+      "adversarial_poisonings": 0,
+      "final_trust": {
+        "S0": 0.632,
+        "S1": 0.5,
+        "S2": 0.5,
+        "S3": 0.5,
+        "S4": 0.5
+      }
+    },
+    {
+      "scenario_id": "SCN-TASK1-009",
+      "task_type": "task1",
+      "steps": 3,
+      "total_score": 1.8,
+      "completion_rate": 0.1,
+      "adversarial_detections": 0,
+      "adversarial_poisonings": 0,
+      "final_trust": {
+        "S0": 0.504,
+        "S1": 0.5,
+        "S2": 0.5,
+        "S3": 0.5,
+        "S4": 0.5
+      }
+    },
+    {
+      "scenario_id": "SCN-TASK1-010",
+      "task_type": "task1",
+      "steps": 5,
+      "total_score": 3.88,
+      "completion_rate": 0.3,
+      "adversarial_detections": 0,
+      "adversarial_poisonings": 0,
+      "final_trust": {
+        "S0": 0.673,
+        "S1": 0.5,
+        "S2": 0.5,
+        "S3": 0.5,
+        "S4": 0.5
+      }
+    },
+    {
+      "scenario_id": "SCN-TASK2-001",
+      "task_type": "task2",
+      "steps": 2,
+      "total_score": 0.5548,
+      "completion_rate": 0.0,
+      "adversarial_detections": 0,
+      "adversarial_poisonings": 0,
+      "final_trust": {
+        "S0": 0.298,
+        "S1": 0.5,
+        "S2": 0.5,
+        "S3": 0.5,
+        "S4": 0.5
+      }
+    },
+    {
+      "scenario_id": "SCN-TASK2-002",
+      "task_type": "task2",
+      "steps": 2,
+      "total_score": 0.5521,
+      "completion_rate": 0.0,
+      "adversarial_detections": 0,
+      "adversarial_poisonings": 0,
+      "final_trust": {
+        "S0": 0.286,
+        "S1": 0.5,
+        "S2": 0.5,
+        "S3": 0.5,
+        "S4": 0.5
+      }
+    },
+    {
+      "scenario_id": "SCN-TASK2-003",
+      "task_type": "task2",
+      "steps": 2,
+      "total_score": 0.5556,
+      "completion_rate": 0.0,
+      "adversarial_detections": 0,
+      "adversarial_poisonings": 0,
+      "final_trust": {
+        "S0": 0.301,
+        "S1": 0.5,
+        "S2": 0.5,
+        "S3": 0.5,
+        "S4": 0.5
+      }
+    },
+    {
+      "scenario_id": "SCN-TASK2-004",
+      "task_type": "task2",
+      "steps": 12,
+      "total_score": 10.3084,
+      "completion_rate": 0.667,
+      "adversarial_detections": 0,
+      "adversarial_poisonings": 0,
+      "final_trust": {
+        "S0": 0.864,
+        "S1": 0.5,
+        "S2": 0.5,
+        "S3": 0.5,
+        "S4": 0.5
+      }
+    },
+    {
+      "scenario_id": "SCN-TASK2-005",
+      "task_type": "task2",
+      "steps": 8,
+      "total_score": 6.4571,
+      "completion_rate": 0.4,
+      "adversarial_detections": 0,
+      "adversarial_poisonings": 0,
+      "final_trust": {
+        "S0": 0.78,
+        "S1": 0.5,
+        "S2": 0.5,
+        "S3": 0.5,
+        "S4": 0.5
+      }
+    },
+    {
+      "scenario_id": "SCN-TASK2-006",
+      "task_type": "task2",
+      "steps": 6,
+      "total_score": 4.6355,
+      "completion_rate": 0.267,
+      "adversarial_detections": 0,
+      "adversarial_poisonings": 0,
+      "final_trust": {
+        "S0": 0.729,
+        "S1": 0.5,
+        "S2": 0.5,
+        "S3": 0.5,
+        "S4": 0.5
+      }
+    },
+    {
+      "scenario_id": "SCN-TASK2-007",
+      "task_type": "task2",
+      "steps": 15,
+      "total_score": 14.3483,
+      "completion_rate": 1.0,
+      "adversarial_detections": 0,
+      "adversarial_poisonings": 0,
+      "final_trust": {
+        "S0": 0.966,
+        "S1": 0.5,
+        "S2": 0.5,
+        "S3": 0.5,
+        "S4": 0.5
+      }
+    },
+    {
+      "scenario_id": "SCN-TASK2-008",
+      "task_type": "task2",
+      "steps": 4,
+      "total_score": 2.6226,
+      "completion_rate": 0.133,
+      "adversarial_detections": 0,
+      "adversarial_poisonings": 0,
+      "final_trust": {
+        "S0": 0.592,
+        "S1": 0.5,
+        "S2": 0.5,
+        "S3": 0.5,
+        "S4": 0.5
+      }
+    },
+    {
+      "scenario_id": "SCN-TASK2-009",
+      "task_type": "task2",
+      "steps": 3,
+      "total_score": 1.6105,
+      "completion_rate": 0.067,
+      "adversarial_detections": 0,
+      "adversarial_poisonings": 0,
+      "final_trust": {
+        "S0": 0.492,
+        "S1": 0.5,
+        "S2": 0.5,
+        "S3": 0.5,
+        "S4": 0.5
+      }
+    },
+    {
+      "scenario_id": "SCN-TASK2-010",
+      "task_type": "task2",
+      "steps": 6,
+      "total_score": 4.6032,
+      "completion_rate": 0.267,
+      "adversarial_detections": 0,
+      "adversarial_poisonings": 0,
+      "final_trust": {
+        "S0": 0.735,
+        "S1": 0.5,
+        "S2": 0.5,
+        "S3": 0.5,
+        "S4": 0.5
+      }
+    },
+    {
+      "scenario_id": "SCN-TASK3-001",
+      "task_type": "task3",
+      "steps": 2,
+      "total_score": 0.9543,
+      "completion_rate": 0.0,
+      "adversarial_detections": 0,
+      "adversarial_poisonings": 0,
+      "final_trust": {
+        "S0": 0.299,
+        "S1": 0.5,
+        "S2": 0.5,
+        "S3": 0.5,
+        "S4": 0.5
+      }
+    },
+    {
+      "scenario_id": "SCN-TASK3-002",
+      "task_type": "task3",
+      "steps": 2,
+      "total_score": 0.9532,
+      "completion_rate": 0.0,
+      "adversarial_detections": 0,
+      "adversarial_poisonings": 0,
+      "final_trust": {
+        "S0": 0.292,
+        "S1": 0.5,
+        "S2": 0.5,
+        "S3": 0.5,
+        "S4": 0.5
+      }
+    },
+    {
+      "scenario_id": "SCN-TASK3-003",
+      "task_type": "task3",
+      "steps": 2,
+      "total_score": 0.9549,
+      "completion_rate": 0.0,
+      "adversarial_detections": 0,
+      "adversarial_poisonings": 0,
+      "final_trust": {
+        "S0": 0.303,
+        "S1": 0.5,
+        "S2": 0.5,
+        "S3": 0.5,
+        "S4": 0.5
+      }
+    },
+    {
+      "scenario_id": "SCN-TASK3-004",
+      "task_type": "task3",
+      "steps": 12,
+      "total_score": 10.9362,
+      "completion_rate": 0.5,
+      "adversarial_detections": 0,
+      "adversarial_poisonings": 0,
+      "final_trust": {
+        "S0": 0.855,
+        "S1": 0.5,
+        "S2": 0.5,
+        "S3": 0.5,
+        "S4": 0.5
+      }
+    },
+    {
+      "scenario_id": "SCN-TASK3-005",
+      "task_type": "task3",
+      "steps": 8,
+      "total_score": 6.884,
+      "completion_rate": 0.3,
+      "adversarial_detections": 0,
+      "adversarial_poisonings": 0,
+      "final_trust": {
+        "S0": 0.785,
+        "S1": 0.5,
+        "S2": 0.5,
+        "S3": 0.5,
+        "S4": 0.5
+      }
+    },
+    {
+      "scenario_id": "SCN-TASK3-006",
+      "task_type": "task3",
+      "steps": 6,
+      "total_score": 5.0089,
+      "completion_rate": 0.2,
+      "adversarial_detections": 0,
+      "adversarial_poisonings": 0,
+      "final_trust": {
+        "S0": 0.727,
+        "S1": 0.5,
+        "S2": 0.5,
+        "S3": 0.5,
+        "S4": 0.5
+      }
+    },
+    {
+      "scenario_id": "SCN-TASK3-007",
+      "task_type": "task3",
+      "steps": 15,
+      "total_score": 13.1578,
+      "completion_rate": 0.65,
+      "adversarial_detections": 0,
+      "adversarial_poisonings": 1,
+      "final_trust": {
+        "S0": 0.88,
+        "S1": 0.5,
+        "S2": 0.5,
+        "S3": 0.5,
+        "S4": 0.5
+      }
+    },
+    {
+      "scenario_id": "SCN-TASK3-008",
+      "task_type": "task3",
+      "steps": 4,
+      "total_score": 2.9864,
+      "completion_rate": 0.1,
+      "adversarial_detections": 0,
+      "adversarial_poisonings": 0,
+      "final_trust": {
+        "S0": 0.602,
+        "S1": 0.5,
+        "S2": 0.5,
+        "S3": 0.5,
+        "S4": 0.5
+      }
+    },
+    {
+      "scenario_id": "SCN-TASK3-009",
+      "task_type": "task3",
+      "steps": 3,
+      "total_score": 1.9507,
+      "completion_rate": 0.05,
+      "adversarial_detections": 0,
+      "adversarial_poisonings": 0,
+      "final_trust": {
+        "S0": 0.498,
+        "S1": 0.5,
+        "S2": 0.5,
+        "S3": 0.5,
+        "S4": 0.5
+      }
+    },
+    {
+      "scenario_id": "SCN-TASK3-010",
+      "task_type": "task3",
+      "steps": 6,
+      "total_score": 4.9861,
+      "completion_rate": 0.2,
+      "adversarial_detections": 0,
+      "adversarial_poisonings": 0,
+      "final_trust": {
+        "S0": 0.732,
+        "S1": 0.5,
+        "S2": 0.5,
+        "S3": 0.5,
+        "S4": 0.5
+      }
+    }
+  ]
+}

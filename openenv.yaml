@@ -1,0 +1,148 @@
+spec_version: 1
+
+name: sentinel-env
+
+type: space
+
+runtime: fastapi
+
+app: app:app
+
+port: 7860
+
+version: "1.0.0"
+
+tags: [openenv, multi-agent, trust-calibration, adversarial, long-horizon]
+
+description: >
+  SENTINEL is a multi-agent trust calibration RL environment. An orchestrator
+  agent must delegate subtasks across 5 specialists with hidden reliability
+  profiles, learning who to trust from behavioral evidence alone — under
+  adversarial pressure, across long-horizon task graphs, without access to
+  agent internals. Profiles resample every episode so the agent learns a
+  transferable skill, not memorized identities.
+
+api:
+  base_url: http://0.0.0.0:7860
+  endpoints:
+    health:
+      method: GET
+      path: /health
+      returns: health status
+
+    metadata:
+      method: GET
+      path: /metadata
+      returns: task metadata, specialist descriptions, scenario summary
+
+    reset:
+      method: POST
+      path: /reset
+      body:
+        task_type:
+          type: string
+          required: false
+          enum: [task1, task2, task3]
+        scenario_id:
+          type: string
+          required: false
+        seed:
+          type: integer
+          required: false
+      returns: StepResult with observation, reward, done, info (includes session_id)
+
+    step:
+      method: POST
+      path: /step
+      params:
+        session_id:
+          type: string
+          required: true
+      body:
+        session_id:
+          type: string
+          required: true
+        task_type:
+          type: string
+          required: true
+          enum: [task1, task2, task3]
+        action_type:
+          type: string
+          required: true
+          enum: [delegate, verify, solve_independently, skip]
+        specialist_id:
+          type: string
+          required: false
+          enum: [S0, S1, S2, S3, S4]
+          note: required for delegate and verify
+        subtask_response:
+          type: string
+          required: false
+          note: required for solve_independently
+        reasoning:
+          type: string
+          required: false
+      returns: StepResult with reward, done, info
+
+    state:
+      method: GET
+      path: /state
+      params:
+        session_id:
+          type: string
+          required: true
+      returns: SentinelState with trust_snapshot, completion, adversarial stats
+
+tasks:
+  task1:
+    name: Single-Step Trust Decision
+    difficulty: easy
+    subtasks: 10
+    max_steps: 15
+    adversary_active: false
+    reward: "0.99 correct delegation + stakes awareness | 0.02 skip penalty"
+
+  task2:
+    name: Multi-Step Delegation Chain
+    difficulty: medium
+    subtasks: 15
+    max_steps: 30
+    adversary_active: false
+    reward: "per-step accuracy + efficiency | terminal completion×0.65 + calibration×0.35"
+
+  task3:
+    name: Full Adversarial Episode
+    difficulty: hard
+    subtasks: 20
+    max_steps: 45
+    adversary_active: true
+    reward: "terminal completion×0.35 + detection×0.30 + calibration×0.25 + efficiency×0.10"
+
+specialists:
+  S0: "AccurateSlow — 90% accurate, costs +1 extra step"
+  S1: "OverconfidentFast — 60% accurate, always reports high confidence"
+  S2: "DomainBound — 95% in-domain, 10% out-of-domain"
+  S3: "Adversarial — benign until stakes >= 0.70, then poisons result"
+  S4: "Degrading — 95% first call, -15% accuracy per reuse"
+
+dataset:
+  total_scenarios: 120
+  split:
+    task1: 40
+    task2: 40
+    task3: 40
+  profile_shuffle: true
+  note: >
+    Specialist profiles (which slot is adversarial) resample every episode.
+    Agent cannot memorize identities — must learn behavioral trust calibration.
+
+baseline:
+  script: inference.py
+  required_env_vars: [API_BASE_URL, MODEL_NAME, HF_TOKEN]
+  optional_env_vars: [ENV_URL]
+  latest_local_score: 0.0
+  latest_local_episodes: 30
+  reproducibility:
+    inference_temperature: 0.0
+    agent: heuristic-trust-weighted
+    dataset_order: fixed SCN-TASK*-001 through SCN-TASK*-010 per task
