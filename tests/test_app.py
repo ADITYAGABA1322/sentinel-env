@@ -4,7 +4,9 @@ import time
 import unittest
 
 from app import SessionStore
+from app import app
 from environment import SentinelEnv
+from fastapi.testclient import TestClient
 
 
 class SessionStoreTests(unittest.TestCase):
@@ -29,7 +31,30 @@ class SessionStoreTests(unittest.TestCase):
         self.assertIsNone(store.get("first"))
         self.assertIs(store.get("second"), second)
 
+    def test_reward_report_endpoint_returns_active_trace(self) -> None:
+        client = TestClient(app)
+        reset = client.post("/reset", json={"task_type": "task3", "seed": 42})
+        self.assertEqual(reset.status_code, 200)
+        payload = reset.json()
+        sid = payload["info"]["session_id"]
+        obs = payload["observation"]
+
+        step = client.post(
+            f"/step?session_id={sid}",
+            json={
+                "session_id": sid,
+                "task_type": obs["task_type"],
+                "action_type": "delegate",
+                "specialist_id": "S0",
+            },
+        )
+        self.assertEqual(step.status_code, 200)
+
+        report = client.get(f"/reward-report?session_id={sid}")
+
+        self.assertEqual(report.status_code, 200)
+        self.assertEqual(report.json()["reward_events"], 1)
+
 
 if __name__ == "__main__":
     unittest.main()
-

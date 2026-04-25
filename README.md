@@ -126,6 +126,14 @@ Task 3 terminal score:
 
 The episode `score` exposed in `info` and inference logs is the mean reward over emitted grading events, normalized to `0.0-1.0`. It is intentionally not raw cumulative return; terminal reward and efficiency terms carry the penalty for unfinished or wasteful episodes while keeping scores comparable across tasks with different horizons.
 
+Reward Engine v2 adds process-aware signals on top of outcome scoring:
+
+- `confidence_alignment`: penalizes confident wrong outputs.
+- `domain_routing`: rewards domain-bound behavior only when it is actually in-domain.
+- `verification_quality`: rewards verification when it catches real high-stakes risk, and discourages blind verification everywhere.
+
+The active step formulas are exposed at `/grader`, and each active episode exposes a full component trace at `/reward-report?session_id=<id>`.
+
 ## WOW Factor Features
 
 SENTINEL now includes three judge-facing upgrades:
@@ -160,6 +168,7 @@ curl "http://localhost:7860/mission?task_type=task3"
 curl http://localhost:7860/metadata
 curl http://localhost:7860/tasks
 curl http://localhost:7860/schema
+curl "http://localhost:7860/reward-report?session_id=<session_id>"
 curl http://localhost:7860/difficulty
 ```
 
@@ -352,9 +361,9 @@ Latest local comparison, 20 episodes per task and policy:
 
 | Policy | Overall | Task 1 | Task 2 | Task 3 |
 | --- | ---: | ---: | ---: | ---: |
-| Random | 0.7144 | 0.7948 | 0.6493 | 0.6990 |
-| Heuristic trust-weighted | 0.8162 | 0.8911 | 0.7736 | 0.7838 |
-| Oracle-lite upper bound | 0.8718 | 0.9445 | 0.7760 | 0.8950 |
+| Random | 0.6954 | 0.7702 | 0.6505 | 0.6655 |
+| Heuristic trust-weighted | 0.7960 | 0.8690 | 0.7677 | 0.7513 |
+| Oracle-lite upper bound | 0.8553 | 0.9180 | 0.7801 | 0.8678 |
 
 The demo story is the score gap: the reward function distinguishes blind delegation from trust-aware routing, and the oracle-lite upper bound shows room for onsite RL training.
 
@@ -384,7 +393,7 @@ Title: `SENTINEL: Training AI to Trust Wisely in Multi-Agent Systems`
 
 SENTINEL is an OpenEnv RL environment for one failure mode: multi-agent systems delegate blindly. One orchestrator must complete long tasks by routing work across five specialist agents whose reliability profiles are hidden and reshuffled every episode. The orchestrator only sees behavior, confidence, stakes, and history, so it must learn skepticism, verification, recovery, and calibrated trust.
 
-The specialists are deterministic FSMs on purpose: they give stable reward signals while the orchestrator remains the trainable target. Random routing scores `0.7144`, trust-weighted routing scores `0.8162`, and oracle-lite reaches `0.8718`, showing the environment has a meaningful learning signal before onsite GRPO training.
+The specialists are deterministic FSMs on purpose: they give stable reward signals while the orchestrator remains the trainable target. Under Reward Engine v2, random routing scores `0.6954`, trust-weighted routing scores `0.7960`, and oracle-lite reaches `0.8553`, showing the environment has a meaningful learning signal before onsite GRPO training.
 
 ## Hackathon Alignment
 

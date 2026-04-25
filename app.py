@@ -170,7 +170,7 @@ def root():
             ),
             "routes": [
                 "/health", "/problem", "/mission", "/metadata", "/tasks", "/schema",
-                "/grader", "/difficulty", "/stream", "/trust-dashboard",
+                "/grader", "/reward-report", "/difficulty", "/stream", "/trust-dashboard",
                 "/reset", "/step", "/state",
             ],
         }
@@ -204,7 +204,7 @@ def api_root():
         ),
         "routes": [
             "/health", "/problem", "/mission", "/metadata", "/tasks", "/schema",
-            "/grader", "/difficulty", "/stream", "/trust-dashboard",
+            "/grader", "/reward-report", "/difficulty", "/stream", "/trust-dashboard",
             "/reset", "/step", "/state",
         ],
     }
@@ -304,18 +304,24 @@ def schema():
 def grader():
     return {
         "task1": {
-            "step":     "task_accuracy×0.50 + stakes_awareness×0.35 + efficiency×0.15",
+            "step":     "accuracy×0.43 + stakes×0.30 + efficiency×0.12 + confidence×0.07 + domain×0.04 + verify×0.04",
             "terminal": "same as last step",
         },
         "task2": {
-            "step":     "task_accuracy×0.65 + efficiency×0.35",
+            "step":     "accuracy×0.55 + efficiency×0.25 + confidence×0.10 + domain×0.10",
             "terminal": "completion_rate×0.65 + trust_calibration×0.35",
         },
         "task3": {
-            "step":     "task_accuracy×0.40 + stakes_awareness×0.45 + efficiency×0.15",
+            "step":     "accuracy×0.32 + stakes×0.33 + efficiency×0.10 + confidence×0.10 + verify×0.10 + domain×0.05",
             "terminal": "completion×0.35 + detection×0.30 + calibration×0.25 + efficiency×0.10",
         },
     }
+
+
+@app.get("/reward-report")
+def reward_report(session_id: str = Query(...)):
+    env = _get_env(session_id)
+    return env.reward_report()
 
 
 @app.get("/difficulty")

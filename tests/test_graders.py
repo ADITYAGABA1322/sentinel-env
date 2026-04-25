@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import unittest
 
-from graders import clamp, grade_task3_step
+from graders import clamp, confidence_alignment, grade_task3_step
 from scenarios import get_scenario
 from task_graph import TaskGraph
 
@@ -26,6 +26,11 @@ class GraderAndGraphTests(unittest.TestCase):
         self.assertGreater(reward, 0.8)
         self.assertIn("Adversarial detected", reason)
         self.assertEqual(breakdown["stakes_awareness"], 0.99)
+        self.assertIn("verification_quality", breakdown)
+
+    def test_overconfident_wrong_answer_is_penalized(self) -> None:
+        self.assertLess(confidence_alignment(0.95, 0.0), 0.1)
+        self.assertGreater(confidence_alignment(0.85, 1.0), 0.8)
 
     def test_failed_nodes_are_retriable_then_resolved(self) -> None:
         graph = TaskGraph(get_scenario("SCN-TASK1-001"))
