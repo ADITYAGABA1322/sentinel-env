@@ -1,9 +1,16 @@
 from __future__ import annotations
 
+import copy
 import random
+import re
 import uuid
 from typing import Any
 
+from difficulty_controller import (
+    GLOBAL_DIFFICULTY_CONTROLLER,
+    DifficultyController,
+    DifficultyProfile,
+)
 from graders import (
     grade_task1_step,
     grade_task2_step, grade_task2_terminal,
@@ -71,6 +78,8 @@ class SentinelEnv:
         self._ledger: TrustLedger = TrustLedger()
         self._pool: SpecialistPool = SpecialistPool()
         self._rng: random.Random = random.Random()
+        self._difficulty_controller: DifficultyController = GLOBAL_DIFFICULTY_CONTROLLER
+        self._difficulty_profile: DifficultyProfile = DifficultyProfile()
 
     # ------------------------------------------------------------------
     # reset()
@@ -81,6 +90,7 @@ class SentinelEnv:
         task_type: str | None = None,
         scenario_id: str | None = None,
         seed: int | None = None,
+        adaptive: bool = False,
     ) -> dict:
 
         self._rng = random.Random(seed)
@@ -92,11 +102,17 @@ class SentinelEnv:
             task = task_type or "task3"
             scenario = sample_scenario(task, seed=seed)
 
+        self._difficulty_profile = self._difficulty_controller.profile(adaptive=adaptive)
+        scenario = self._apply_difficulty_profile(scenario, self._difficulty_profile)
+
         self.current_scenario = scenario
         self.episode_id       = str(uuid.uuid4())
         self.session_id       = str(uuid.uuid4())
         self.step_count       = 0
-        self.max_steps        = MAX_STEPS[scenario["task_type"]]
+        self.max_steps        = max(
+            len(scenario["subtasks"]),
+            MAX_STEPS[scenario["task_type"]] - self._difficulty_profile.verify_budget_penalty,
+        )
         self.total_reward     = 0.0
         self.reward_events    = 0
         self.last_reward      = 0.0
@@ -108,6 +124,11 @@ class SentinelEnv:
         self._graph = TaskGraph(scenario)
         self._ledger.reset()
         self._pool.reset(seed=seed)
+        self._pool.configure_adversary(
+            stakes_threshold=self._difficulty_profile.adversarial_threshold,
+            benign_confidence=self._difficulty_profile.adversary_benign_confidence,
+            poison_confidence=self._difficulty_profile.adversary_poison_confidence,
+        )
 
         return self._build_step_result(
             reward_value=0.0,
@@ -189,7 +210,13 @@ class SentinelEnv:
             # Important: trust must learn from the specialist's raw answer, not
             # from the corrected/avoided graph outcome. If S0 was caught lying,
             # the task node is safe, but S0's trust should still drop.
-            self._ledger.update(specialist_id, result.outcome, stakes)
+            self._ledger.update(
+                specialist_id,
+                result.outcome,
+                stakes,
+                confidence=result.confidence,
+                domain=subtask.get("domain"),
+            )
             self.last_action_summary = f"Verified {specialist_id} on {subtask['id']}"
 
         else:  # delegate
@@ -204,7 +231,13 @@ class SentinelEnv:
             was_adversarial  = result.is_adversarial
             outcome         = 0.0 if was_adversarial else result.outcome
             self._graph.record_outcome(subtask["id"], outcome, specialist_id, was_adversarial)
-            self._ledger.update(specialist_id, result.outcome, stakes)
+            self._ledger.update(
+                specialist_id,
+                result.outcome,
+                stakes,
+                confidence=result.confidence,
+                domain=subtask.get("domain"),
+            )
             self.last_action_summary = f"Delegated to {specialist_id} on {subtask['id']}"
 
         self.step_count += max(1, step_cost)
@@ -260,6 +293,8 @@ class SentinelEnv:
             "trust_snapshot":         self._ledger.snapshot(),
             "adversarial_detections": self._graph.adversarial_detections(),
             "adversarial_poisonings": self._graph.adversarial_poisonings(),
+            "behavioral_fingerprints": self._ledger.behavioral_fingerprints(),
+            "difficulty_profile":      self._difficulty_profile.to_dict(),
         }
 
     # ------------------------------------------------------------------
@@ -341,6 +376,17 @@ class SentinelEnv:
         self.reward_events += 1
         self.done           = True
         self.episode_status = "failed" if forced_end else "completed"
+        if self._difficulty_profile.adaptive:
+            self._difficulty_controller.update(
+                {
+                    "adversarial_detections": self._graph.adversarial_detections(),
+                    "adversarial_poisonings": self._graph.adversarial_poisonings(),
+                    "adversarial_encounters": (
+                        self._graph.adversarial_detections()
+                        + self._graph.adversarial_poisonings()
+                    ),
+                }
+            )
 
         return self._build_step_result(
             terminal_value, terminal_reason, terminal_breakdown,
@@ -349,6 +395,7 @@ class SentinelEnv:
                 **self._graph.summary(),
                 "trust_snapshot": self._ledger.snapshot(),
                 "forced_end":     forced_end,
+                "difficulty_profile": self._difficulty_profile.to_dict(),
             },
         )
 
@@ -377,6 +424,8 @@ class SentinelEnv:
             "subtasks_remaining":    self._graph.subtasks_remaining() if self._graph else 0,
             "available_specialists": self._pool.available_ids(),
             "trust_snapshot":        self._ledger.snapshot(),
+            "behavioral_fingerprints": self._ledger.behavioral_fingerprints(),
+            "difficulty_profile":    self._difficulty_profile.to_dict(),
             "stakes_level":          node.subtask["stakes"] if node else 0.0,
             "step_count":            self.step_count,
             "max_steps":             self.max_steps,
@@ -423,3 +472,38 @@ class SentinelEnv:
 
     def _public_ground_truth_reliability(self) -> dict[str, float]:
         return self._pool.public_ground_truth_reliability(_GROUND_TRUTH_RELIABILITY)
+
+    def stream_snapshot(self) -> dict:
+        return {
+            "session_id": self.session_id,
+            "step_count": self.step_count,
+            "max_steps": self.max_steps,
+            "done": self.done,
+            "trust_snapshot": self._ledger.snapshot(),
+            "behavioral_fingerprints": self._ledger.behavioral_fingerprints(),
+            "difficulty_profile": self._difficulty_profile.to_dict(),
+            "last_action_summary": self.last_action_summary,
+            "last_reward": round(self.last_reward, 4),
+        }
+
+    def _apply_difficulty_profile(
+        self,
+        scenario: Scenario,
+        profile: DifficultyProfile,
+    ) -> Scenario:
+        scenario_copy = copy.deepcopy(scenario)
+        if not profile.adaptive or scenario_copy["task_type"] != "task3":
+            return scenario_copy
+
+        subtasks = scenario_copy["subtasks"]
+        desired_high_stakes = max(1, round(len(subtasks) * profile.high_stakes_ratio))
+        for offset, subtask in enumerate(subtasks[-desired_high_stakes:]):
+            target_stakes = min(0.99, profile.adversarial_threshold + 0.05 + offset * 0.02)
+            if subtask["stakes"] < target_stakes:
+                subtask["stakes"] = round(target_stakes, 2)
+                subtask["description"] = re.sub(
+                    r"stakes=\d+\.\d+",
+                    f"stakes={subtask['stakes']:.2f}",
+                    subtask["description"],
+                )
+        return scenario_copy

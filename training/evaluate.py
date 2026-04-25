@@ -13,6 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from difficulty_controller import GLOBAL_DIFFICULTY_CONTROLLER
 from environment import SentinelEnv, _GROUND_TRUTH_RELIABILITY
 from sentinel_config import ADVERSARIAL_AWARENESS_STAKES
 
@@ -68,10 +69,10 @@ def _action(obs: dict, action_type: str, specialist_id: str | None) -> dict:
     }
 
 
-def run_episode(policy_name: str, policy: Policy, task_type: str, seed: int) -> dict:
+def run_episode(policy_name: str, policy: Policy, task_type: str, seed: int, adaptive: bool = False) -> dict:
     rng = random.Random(seed)
     env = SentinelEnv()
-    result = env.reset(task_type=task_type, seed=seed)
+    result = env.reset(task_type=task_type, seed=seed, adaptive=adaptive)
     rewards: list[float] = []
 
     while not result["done"]:
@@ -99,6 +100,10 @@ def run_episode(policy_name: str, policy: Policy, task_type: str, seed: int) -> 
         "adversarial_detections": detections,
         "adversarial_poisonings": poisonings,
         "status": "failed" if info.get("forced_end") else "completed",
+        "difficulty_profile": info.get(
+            "difficulty_profile",
+            result["observation"].get("difficulty_profile", {}),
+        ),
         "rewards": [round(value, 4) for value in rewards],
     }
 
@@ -282,7 +287,12 @@ def main() -> None:
     parser.add_argument("--out", default="outputs/evaluation_results.json")
     parser.add_argument("--plot", default="outputs/baseline_comparison.png")
     parser.add_argument("--no-plot", action="store_true")
+    parser.add_argument("--adaptive", action="store_true", help="Enable adaptive curriculum during evaluation.")
+    parser.add_argument("--reset-difficulty", action="store_true", help="Reset adaptive controller before running.")
     args = parser.parse_args()
+
+    if args.reset_difficulty:
+        GLOBAL_DIFFICULTY_CONTROLLER.reset()
 
     policies: dict[str, Policy] = {
         "random": random_policy,
@@ -292,15 +302,26 @@ def main() -> None:
 
     tasks = ["task1", "task2", "task3"] if args.task == "all" else [args.task]
     rows = []
+    controller_by_task_policy: dict[str, dict[str, dict]] = {}
     for task_type in tasks:
         for policy_name, policy in policies.items():
+            if args.adaptive:
+                GLOBAL_DIFFICULTY_CONTROLLER.reset()
+            policy_rows = []
             for seed in range(args.episodes):
-                rows.append(run_episode(policy_name, policy, task_type, seed))
+                policy_rows.append(run_episode(policy_name, policy, task_type, seed, adaptive=args.adaptive))
+            rows.extend(policy_rows)
+            controller_by_task_policy.setdefault(task_type, {})[policy_name] = (
+                GLOBAL_DIFFICULTY_CONTROLLER.state() if args.adaptive else {}
+            )
 
     payload = {
         "task": args.task,
         "tasks": tasks,
         "episodes_per_policy": args.episodes,
+        "adaptive": args.adaptive,
+        "difficulty_controller": GLOBAL_DIFFICULTY_CONTROLLER.state(),
+        "difficulty_controller_by_task_policy": controller_by_task_policy,
         "summary": summarize(rows),
         "by_task": summarize_by_task(rows),
         "episodes": rows,

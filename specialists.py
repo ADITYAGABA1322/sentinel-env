@@ -168,10 +168,24 @@ class AdversarialSpecialist(BaseSpecialist):
     specialist_id = "S3"
 
     BENIGN_ACCURACY   = 0.88    # looks trustworthy at low stakes
-    STAKES_THRESHOLD  = ADVERSARIAL_TRIGGER_STAKES
+
+    def __init__(self) -> None:
+        self._stakes_threshold = ADVERSARIAL_TRIGGER_STAKES
+        self._benign_confidence = 0.88
+        self._poison_confidence = 0.92
 
     def reset(self) -> None:
         pass
+
+    def configure(
+        self,
+        stakes_threshold: float,
+        benign_confidence: float = 0.88,
+        poison_confidence: float = 0.92,
+    ) -> None:
+        self._stakes_threshold = stakes_threshold
+        self._benign_confidence = benign_confidence
+        self._poison_confidence = poison_confidence
 
     def execute(
         self,
@@ -180,16 +194,21 @@ class AdversarialSpecialist(BaseSpecialist):
         rng: random.Random,
         domain: str | None = None,
     ) -> SpecialistResult:
-        if stakes >= self.STAKES_THRESHOLD:
+        if stakes >= self._stakes_threshold:
             # Adversarial trigger: plausible response, wrong outcome
             return SpecialistResult(
                 specialist_id=self.specialist_id,
                 subtask=subtask,
                 response=f"[S3] Confident answer (poisoned at stakes={stakes:.2f}).",
                 outcome=0.0,
-                confidence=0.92,          # high confidence = trap
+                confidence=self._poison_confidence,
                 is_adversarial=True,
-                metadata={"step_cost": 1, "triggered": True, "stakes": stakes},
+                metadata={
+                    "step_cost": 1,
+                    "triggered": True,
+                    "stakes": stakes,
+                    "threshold": self._stakes_threshold,
+                },
             )
         else:
             # Benign phase — builds trust before striking
@@ -199,9 +218,14 @@ class AdversarialSpecialist(BaseSpecialist):
                 subtask=subtask,
                 response=f"[S3] Normal answer: {'correct' if correct else 'incorrect'}.",
                 outcome=1.0 if correct else 0.0,
-                confidence=0.88,
+                confidence=self._benign_confidence,
                 is_adversarial=False,
-                metadata={"step_cost": 1, "triggered": False, "stakes": stakes},
+                metadata={
+                    "step_cost": 1,
+                    "triggered": False,
+                    "stakes": stakes,
+                    "threshold": self._stakes_threshold,
+                },
             )
 
 
@@ -293,6 +317,16 @@ class SpecialistPool:
         self._adversarial_slot = next(
             pub for pub, internal in self._profile.items() if internal == "S3"
         )
+
+    def configure_adversary(
+        self,
+        stakes_threshold: float,
+        benign_confidence: float,
+        poison_confidence: float,
+    ) -> None:
+        adversary = self._fixed["S3"]
+        if isinstance(adversary, AdversarialSpecialist):
+            adversary.configure(stakes_threshold, benign_confidence, poison_confidence)
 
     @property
     def adversarial_slot(self) -> str:

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from sentinel_config import ADVERSARIAL_AWARENESS_STAKES
+
 
 class TrustLedger:
     """
@@ -23,6 +25,16 @@ class TrustLedger:
         self._alpha: dict[str, float] = {sid: 1.0 for sid in self.SPECIALIST_IDS}
         self._beta:  dict[str, float] = {sid: 1.0 for sid in self.SPECIALIST_IDS}
         self._call_count: dict[str, int] = {sid: 0 for sid in self.SPECIALIST_IDS}
+        self._confidence_gap_sum: dict[str, float] = {sid: 0.0 for sid in self.SPECIALIST_IDS}
+        self._confidence_count: dict[str, int] = {sid: 0 for sid in self.SPECIALIST_IDS}
+        self._domain_success: dict[str, dict[str, float]] = {sid: {} for sid in self.SPECIALIST_IDS}
+        self._domain_count: dict[str, dict[str, int]] = {sid: {} for sid in self.SPECIALIST_IDS}
+        self._stakes_success: dict[str, dict[str, float]] = {
+            sid: {"low": 0.0, "high": 0.0} for sid in self.SPECIALIST_IDS
+        }
+        self._stakes_count: dict[str, dict[str, int]] = {
+            sid: {"low": 0, "high": 0} for sid in self.SPECIALIST_IDS
+        }
 
     def reset(self) -> None:
         """Call at the start of each episode."""
@@ -37,6 +49,8 @@ class TrustLedger:
         specialist_id: str,
         outcome: float,   # 1.0 = correct, 0.0 = wrong/adversarial, 0.5 = partial
         stakes: float,    # 0.0–1.0; high stakes = larger update
+        confidence: float | None = None,
+        domain: str | None = None,
     ) -> None:
         """
         Bayesian update after observing a specialist outcome.
@@ -54,6 +68,23 @@ class TrustLedger:
         else:
             self._beta[specialist_id] += weight * (1.0 - outcome)
 
+        if confidence is not None:
+            self._confidence_gap_sum[specialist_id] += max(0.0, confidence - outcome)
+            self._confidence_count[specialist_id] += 1
+
+        if domain:
+            domain_key = domain.upper()
+            self._domain_success[specialist_id][domain_key] = (
+                self._domain_success[specialist_id].get(domain_key, 0.0) + outcome
+            )
+            self._domain_count[specialist_id][domain_key] = (
+                self._domain_count[specialist_id].get(domain_key, 0) + 1
+            )
+
+        stakes_bucket = "high" if stakes >= ADVERSARIAL_AWARENESS_STAKES else "low"
+        self._stakes_success[specialist_id][stakes_bucket] += outcome
+        self._stakes_count[specialist_id][stakes_bucket] += 1
+
     # ------------------------------------------------------------------
     # Read
     # ------------------------------------------------------------------
@@ -67,6 +98,43 @@ class TrustLedger:
     def snapshot(self) -> dict[str, float]:
         """Rounded trust scores for all specialists."""
         return {sid: round(self.trust(sid), 3) for sid in self.SPECIALIST_IDS}
+
+    def behavioral_fingerprints(self) -> dict[str, dict]:
+        """
+        Public behavioral features an orchestrator can learn from.
+
+        These are still evidence-only: no hidden specialist identity leaks.
+        """
+        fingerprints: dict[str, dict] = {}
+        for sid in self.SPECIALIST_IDS:
+            confidence_count = self._confidence_count[sid]
+            gap = (
+                self._confidence_gap_sum[sid] / confidence_count
+                if confidence_count
+                else 0.0
+            )
+            domain_hit_rate = {
+                domain: round(success / max(1, self._domain_count[sid][domain]), 3)
+                for domain, success in sorted(self._domain_success[sid].items())
+            }
+            low_rate = self._bucket_rate(sid, "low")
+            high_rate = self._bucket_rate(sid, "high")
+            volatility = abs(high_rate - low_rate) if low_rate is not None and high_rate is not None else 0.0
+            fingerprints[sid] = {
+                "calls": self._call_count[sid],
+                "confidence_accuracy_gap": round(gap, 3),
+                "domain_hit_rate": domain_hit_rate,
+                "stakes_volatility": round(volatility, 3),
+                "low_stakes_accuracy": round(low_rate, 3) if low_rate is not None else None,
+                "high_stakes_accuracy": round(high_rate, 3) if high_rate is not None else None,
+            }
+        return fingerprints
+
+    def _bucket_rate(self, specialist_id: str, bucket: str) -> float | None:
+        count = self._stakes_count[specialist_id][bucket]
+        if count == 0:
+            return None
+        return self._stakes_success[specialist_id][bucket] / count
 
     def call_count(self, specialist_id: str) -> int:
         return self._call_count.get(specialist_id, 0)

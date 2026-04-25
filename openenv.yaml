@@ -49,6 +49,10 @@ api:
         seed:
           type: integer
           required: false
+        adaptive:
+          type: boolean
+          required: false
+          note: enables adaptive difficulty curriculum for Theme 4 demos
       returns: StepResult with observation, reward, done, info (includes session_id)
 
     step:
@@ -92,6 +96,29 @@ api:
           type: string
           required: true
       returns: SentinelState with trust_snapshot, completion, adversarial stats
+
+    difficulty:
+      method: GET
+      path: /difficulty
+      returns: adaptive curriculum controller state
+
+    stream:
+      method: GET
+      path: /stream
+      params:
+        session_id:
+          type: string
+          required: true
+      returns: text/event-stream trust snapshots for live dashboards
+
+    trust_dashboard:
+      method: GET
+      path: /trust-dashboard
+      params:
+        session_id:
+          type: string
+          required: false
+      returns: browser dashboard with live S0-S4 trust bars
 
 deployment:
   session_backend: single_process_memory
@@ -139,6 +166,22 @@ thresholds:
   adversarial_awareness_stakes: 0.70
   critical_poison_stakes: 0.85
   verify_extra_step_cost: 1
+
+adaptive_curriculum:
+  optional_reset_flag: adaptive
+  default_enabled: false
+  controller_window_episodes: 20
+  harder_when_detection_rate_above: 0.70
+  easier_when_detection_rate_below: 0.30
+  knobs:
+    - adversarial_threshold
+    - high_stakes_ratio
+    - verify_budget_penalty
+    - adversary_confidence
+  note: >
+    Standard episodes remain deterministic by default. Passing adaptive=true to
+    /reset enables a self-improving curriculum that tightens or relaxes task3
+    difficulty based on recent adversarial detection performance.
 
 dataset:
   total_scenarios: 120
