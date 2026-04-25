@@ -67,6 +67,27 @@ class EnvironmentTests(unittest.TestCase):
         self.assertGreater(result["info"]["step_count"], 2)
         self.assertGreaterEqual(result["info"]["score"], 0.0)
         self.assertLessEqual(result["info"]["score"], 1.0)
+        self.assertIn("reward_report", result["info"])
+        self.assertGreater(result["info"]["reward_report"]["reward_events"], 0)
+
+    def test_reward_report_tracks_process_components(self) -> None:
+        env = SentinelEnv()
+        result = env.reset(task_type="task3", seed=42)
+        obs = result["observation"]
+
+        result = env.step({
+            "session_id": obs["session_id"],
+            "task_type": "task3",
+            "action_type": "delegate",
+            "specialist_id": "S0",
+        })
+
+        report = env.reward_report()
+
+        self.assertEqual(report["reward_events"], 1)
+        self.assertIn("confidence_alignment", report["component_averages"])
+        self.assertIn("domain_routing", report["component_averages"])
+        self.assertEqual(report["events"][0]["action_type"], "delegate")
 
 
 if __name__ == "__main__":

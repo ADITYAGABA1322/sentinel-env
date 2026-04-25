@@ -73,6 +73,7 @@ class SentinelEnv:
         self.done: bool = False
         self.episode_status: str = "active"
         self.last_action_summary: str | None = None
+        self._reward_trace: list[dict[str, Any]] = []
 
         self._graph: TaskGraph | None = None
         self._ledger: TrustLedger = TrustLedger()
@@ -119,6 +120,7 @@ class SentinelEnv:
         self.done             = False
         self.episode_status   = "active"
         self.last_action_summary = None
+        self._reward_trace = []
 
         # Reset subcomponents
         self._graph = TaskGraph(scenario)
@@ -172,6 +174,9 @@ class SentinelEnv:
 
         subtask  = node.subtask
         stakes   = subtask["stakes"]
+        confidence: float | None = None
+        result_metadata: dict[str, Any] = {}
+        trust_before = self._ledger.trust(specialist_id) if specialist_id else None
 
         step_cost = 1
 
@@ -203,6 +208,8 @@ class SentinelEnv:
             step_cost       = int(result.metadata.get("step_cost", 1)) + VERIFY_EXTRA_STEP_COST
             outcome         = result.outcome if not result.is_adversarial else 0.0
             was_adversarial  = result.is_adversarial
+            confidence = result.confidence
+            result_metadata = dict(result.metadata)
             # Verification means agent caught adversarial — treat as detection
             if result.is_adversarial:
                 outcome = 1.0   # successfully avoided
@@ -230,6 +237,8 @@ class SentinelEnv:
             step_cost       = int(result.metadata.get("step_cost", 1))
             was_adversarial  = result.is_adversarial
             outcome         = 0.0 if was_adversarial else result.outcome
+            confidence = result.confidence
+            result_metadata = dict(result.metadata)
             self._graph.record_outcome(subtask["id"], outcome, specialist_id, was_adversarial)
             self._ledger.update(
                 specialist_id,
@@ -245,12 +254,26 @@ class SentinelEnv:
         # --- Grade this step ---
         reward_value, reason, breakdown = self._grade_step(
             task_type, action_type, specialist_id, outcome,
-            stakes, was_adversarial,
+            stakes, was_adversarial, confidence, result_metadata, trust_before,
         )
 
         self.last_reward   = reward_value
         self.total_reward += reward_value
         self.reward_events += 1
+        self._record_reward_event(
+            kind="step",
+            action_type=action_type,
+            specialist_id=specialist_id,
+            subtask=subtask,
+            stakes=stakes,
+            reward_value=reward_value,
+            reason=reason,
+            breakdown=breakdown,
+            was_adversarial=was_adversarial,
+            confidence=confidence,
+            result_metadata=result_metadata,
+            trust_before=trust_before,
+        )
 
         # --- Check episode end ---
         all_done    = self._graph.is_done()
@@ -309,6 +332,9 @@ class SentinelEnv:
         outcome: float,
         stakes: float,
         was_adversarial: bool,
+        confidence: float | None,
+        result_metadata: dict[str, Any],
+        trust_score: float | None,
     ) -> tuple[float, str, dict]:
 
         if task_type == "task1":
@@ -318,6 +344,9 @@ class SentinelEnv:
                 stakes=stakes,
                 was_adversarial=was_adversarial,
                 action_type=action_type,
+                confidence=confidence,
+                result_metadata=result_metadata,
+                trust_score=trust_score,
             )
         elif task_type == "task2":
             return grade_task2_step(
@@ -325,6 +354,8 @@ class SentinelEnv:
                 action_type=action_type,
                 step_count=self.step_count,
                 max_steps=self.max_steps,
+                confidence=confidence,
+                result_metadata=result_metadata,
             )
         else:  # task3
             return grade_task3_step(
@@ -334,6 +365,9 @@ class SentinelEnv:
                 action_type=action_type,
                 step_count=self.step_count,
                 max_steps=self.max_steps,
+                confidence=confidence,
+                result_metadata=result_metadata,
+                trust_score=trust_score,
             )
 
     def _terminal_reward(
@@ -376,6 +410,20 @@ class SentinelEnv:
         self.reward_events += 1
         self.done           = True
         self.episode_status = "failed" if forced_end else "completed"
+        self._record_reward_event(
+            kind="terminal",
+            action_type="terminal",
+            specialist_id=None,
+            subtask=None,
+            stakes=0.0,
+            reward_value=terminal_value,
+            reason=terminal_reason,
+            breakdown=terminal_breakdown,
+            was_adversarial=False,
+            confidence=None,
+            result_metadata={},
+            trust_before=None,
+        )
         if self._difficulty_profile.adaptive:
             self._difficulty_controller.update(
                 {
@@ -396,6 +444,7 @@ class SentinelEnv:
                 "trust_snapshot": self._ledger.snapshot(),
                 "forced_end":     forced_end,
                 "difficulty_profile": self._difficulty_profile.to_dict(),
+                "reward_report": self.reward_report(),
             },
         )
 
@@ -484,6 +533,71 @@ class SentinelEnv:
             "difficulty_profile": self._difficulty_profile.to_dict(),
             "last_action_summary": self.last_action_summary,
             "last_reward": round(self.last_reward, 4),
+        }
+
+    def reward_report(self) -> dict:
+        return {
+            "episode_id": self.episode_id,
+            "session_id": self.session_id,
+            "task_type": self.current_scenario["task_type"] if self.current_scenario else "",
+            "score": round(self.normalized_score(), 4),
+            "total_reward": round(self.total_reward, 4),
+            "reward_events": self.reward_events,
+            "component_averages": self._reward_component_averages(),
+            "events": list(self._reward_trace),
+            "formula": {
+                "task1_step": "0.43 accuracy + 0.30 stakes + 0.12 efficiency + 0.07 confidence + 0.04 domain + 0.04 verify",
+                "task2_step": "0.55 accuracy + 0.25 efficiency + 0.10 confidence + 0.10 domain",
+                "task3_step": "0.32 accuracy + 0.33 stakes + 0.10 efficiency + 0.10 confidence + 0.10 verify + 0.05 domain",
+                "task3_terminal": "0.35 completion + 0.30 detection + 0.25 calibration + 0.10 efficiency",
+            },
+        }
+
+    def _record_reward_event(
+        self,
+        kind: str,
+        action_type: str,
+        specialist_id: str | None,
+        subtask: dict[str, Any] | None,
+        stakes: float,
+        reward_value: float,
+        reason: str,
+        breakdown: dict,
+        was_adversarial: bool,
+        confidence: float | None,
+        result_metadata: dict[str, Any],
+        trust_before: float | None,
+    ) -> None:
+        event = {
+            "kind": kind,
+            "step_count": self.step_count,
+            "action_type": action_type,
+            "specialist_id": specialist_id,
+            "subtask_id": subtask.get("id") if subtask else None,
+            "domain": subtask.get("domain") if subtask else None,
+            "stakes": round(stakes, 3),
+            "reward": round(reward_value, 4),
+            "reason": reason,
+            "signal_breakdown": breakdown,
+            "was_adversarial": was_adversarial,
+            "confidence": round(confidence, 3) if confidence is not None else None,
+            "trust_before": round(trust_before, 3) if trust_before is not None else None,
+            "trust_after": self._ledger.snapshot().get(specialist_id) if specialist_id else None,
+            "result_metadata": result_metadata,
+        }
+        self._reward_trace.append(event)
+
+    def _reward_component_averages(self) -> dict[str, float]:
+        totals: dict[str, float] = {}
+        counts: dict[str, int] = {}
+        for event in self._reward_trace:
+            for key, value in event.get("signal_breakdown", {}).items():
+                if isinstance(value, (int, float)):
+                    totals[key] = totals.get(key, 0.0) + float(value)
+                    counts[key] = counts.get(key, 0) + 1
+        return {
+            key: round(total / max(1, counts[key]), 4)
+            for key, total in sorted(totals.items())
         }
 
     def _apply_difficulty_profile(

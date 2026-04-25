@@ -14,11 +14,11 @@ SENTINEL wins if the repo, Space, README, UI, and pitch all tell the same story:
 
 | Area | Status | Notes |
 | --- | --- | --- |
-| Environment core | Strong | `reset()`, `step()`, `state()`, rewards, task graph, specialists, trust ledger |
+| Environment core | Strong | `reset()`, `step()`, `state()`, reward v2, task graph, specialists, trust ledger |
 | OpenEnv / deploy | Strong | Space live, Docker passing, validation passing |
 | UI clarity | Improving | Trust Mission Control is live, but still needs full judge-demo mode |
 | Presentation assets | Partial | Story exists, but diagrams and finale pack need stronger structure |
-| Training evidence | Partial | Baselines are real; final onsite GRPO curve still missing |
+| Training evidence | Partial | Baselines are refreshed under Reward Engine v2; final onsite GRPO curve still missing |
 | Submission completeness | Partial | Mini-blog/video and final finale package still needed |
 
 ## What We Borrow From MiroFish

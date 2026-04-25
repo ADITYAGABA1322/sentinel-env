@@ -97,6 +97,15 @@ api:
           required: true
       returns: SentinelState with trust_snapshot, completion, adversarial stats
 
+    reward_report:
+      method: GET
+      path: /reward-report
+      params:
+        session_id:
+          type: string
+          required: true
+      returns: Reward component trace with per-step process-aware signals
+
     difficulty:
       method: GET
       path: /difficulty
@@ -144,7 +153,7 @@ tasks:
     subtasks: 15
     max_steps: 30
     adversary_active: false
-    reward: "per-step accuracy + efficiency | terminal completion×0.65 + calibration×0.35"
+    reward: "per-step accuracy + efficiency + confidence alignment + domain routing | terminal completion×0.65 + calibration×0.35"
 
   task3:
     name: Full Adversarial Episode
@@ -152,7 +161,16 @@ tasks:
     subtasks: 20
     max_steps: 45
     adversary_active: true
-    reward: "terminal completion×0.35 + detection×0.30 + calibration×0.25 + efficiency×0.10"
+    reward: "step accuracy + stakes awareness + efficiency + confidence alignment + verification quality + domain routing | terminal completion×0.35 + detection×0.30 + calibration×0.25 + efficiency×0.10"
+
+reward_engine_v2:
+  source: verifier/execution-style behavioral outcomes
+  granularity: step plus terminal trajectory
+  aggregation: fixed weighted multi-signal reward
+  process_signals:
+    confidence_alignment: penalizes high confidence on wrong outputs
+    domain_routing: rewards in-domain specialist behavior when metadata exists
+    verification_quality: rewards verification when it catches high-stakes adversarial risk
 
 specialists:
   S0: "AccurateSlow — 90% accurate, costs 2 steps"

@@ -9,6 +9,7 @@ This file is the diagram source of truth. Every diagram used in README, UI, blog
 | System stack | show the code architecture | ready |
 | Episode lifecycle | explain `reset()` to terminal reward | ready |
 | Trust and reward flow | show how state turns into learning signal | ready |
+| Reward engine v2 | show process-aware reward components | ready |
 | Before / after | show why SENTINEL matters | ready |
 | Theme fit | map the project to the hackathon | ready |
 | Training loop | show OpenEnv -> TRL / Unsloth pipeline | ready |
@@ -77,7 +78,34 @@ flowchart LR
 
 ---
 
-## 4. Before / After
+## 4. Reward Engine V2
+
+```mermaid
+flowchart LR
+  A["Specialist result<br/>outcome, confidence, metadata"] --> B["Step reward"]
+  C["TaskGraph<br/>completion, detections, poisonings"] --> D["Terminal reward"]
+  E["TrustLedger<br/>calibration, fingerprints"] --> D
+
+  B --> B1["task accuracy"]
+  B --> B2["stakes awareness"]
+  B --> B3["efficiency"]
+  B --> B4["confidence alignment"]
+  B --> B5["verification quality"]
+  B --> B6["domain routing"]
+
+  D --> D1["completion rate"]
+  D --> D2["detection rate"]
+  D --> D3["trust calibration"]
+  D --> D4["episode efficiency"]
+
+  B --> R["reward-report endpoint"]
+  D --> R
+  R --> T["component trace for judges"]
+```
+
+---
+
+## 5. Before / After
 
 ```mermaid
 flowchart LR
@@ -98,7 +126,7 @@ flowchart LR
 
 ---
 
-## 5. Theme Fit
+## 6. Theme Fit
 
 ```mermaid
 flowchart TD
@@ -115,7 +143,7 @@ flowchart TD
 
 ---
 
-## 6. Training Loop
+## 7. Training Loop
 
 ```mermaid
 flowchart LR
