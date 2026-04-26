@@ -173,6 +173,11 @@ outputs/charts/detection_vs_poisoning.png
 outputs/charts/cluster_health_timeline.png
 outputs/charts/task_radar.png
 outputs/charts/ablation.png
+outputs/charts/baseline_delta_lines.png
+outputs/charts/cluster_health_policy_lines.png
+outputs/charts/trust_gap_over_time.png
+outputs/charts/reward_component_stacked_area.png
+outputs/charts/failure_fishbone_map.png
 ```
 
 Then verify:

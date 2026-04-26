@@ -1,5 +1,5 @@
 "use client";
-import { Brain, Shuffle, CircleGauge, ShieldAlert, ArrowRight, Sparkles } from "lucide-react";
+import { Brain, Shuffle, CircleGauge, ShieldAlert, ArrowRight, Sparkles, ChartLine } from "lucide-react";
 import { formatScore } from "../lib/theme";
 import type { EvalSummary } from "../lib/types";
 
@@ -21,6 +21,38 @@ const AFTER_STEPS = [
   "High-stakes + low-trust triggers verification.",
   "Adversarial attempt blocked before cascade.",
   "Profile swap proves skill, not memorized identity.",
+];
+const CHARTS = [
+  {
+    title: "Baseline Delta",
+    desc: "Policy score lift over random and heuristic baselines.",
+    src: "/assets/charts/baseline_delta_lines.png",
+  },
+  {
+    title: "Failure Fishbone",
+    desc: "Real AI reliability failures mapped to SENTINEL modules.",
+    src: "/assets/charts/failure_fishbone_map.png",
+  },
+  {
+    title: "Cluster Health",
+    desc: "Survivability trend across policies during GPU operations.",
+    src: "/assets/charts/cluster_health_policy_lines.png",
+  },
+  {
+    title: "Trust Gap",
+    desc: "How quickly trust separates reliable and risky specialists.",
+    src: "/assets/charts/trust_gap_over_time.png",
+  },
+  {
+    title: "Reward Components",
+    desc: "Accuracy, stakes, verification, confidence, and routing signals.",
+    src: "/assets/charts/reward_component_stacked_area.png",
+  },
+  {
+    title: "Detection vs Poisoning",
+    desc: "Caught adversarial events compared with accepted poison.",
+    src: "/assets/charts/detection_vs_poisoning.png",
+  },
 ];
 
 export default function Landing({
@@ -134,6 +166,28 @@ export default function Landing({
               <h4>{a.title}</h4>
               <p>{a.desc}</p>
             </div>
+          ))}
+        </div>
+      </div>
+
+      {/* evidence charts */}
+      <div className="chart-section">
+        <div className="panel-head" style={{ textAlign: "center", marginBottom: 16 }}>
+          <div className="panel-eyebrow">Evidence</div>
+          <div className="panel-title">Baseline, Trust, Reward, and Failure Maps</div>
+        </div>
+        <div className="chart-grid">
+          {CHARTS.map((chart) => (
+            <a className="panel chart-card" href={chart.src} target="_blank" rel="noreferrer" key={chart.src}>
+              <div className="chart-meta">
+                <ChartLine size={16} />
+                <div>
+                  <h4>{chart.title}</h4>
+                  <p>{chart.desc}</p>
+                </div>
+              </div>
+              <img src={chart.src} alt={chart.title} />
+            </a>
           ))}
         </div>
       </div>
