@@ -583,6 +583,7 @@ class SentinelEnv:
             "confidence": round(confidence, 3) if confidence is not None else None,
             "trust_before": round(trust_before, 3) if trust_before is not None else None,
             "trust_after": self._ledger.snapshot().get(specialist_id) if specialist_id else None,
+            "trust_snapshot": self._ledger.snapshot(),
             "result_metadata": result_metadata,
         }
         self._reward_trace.append(event)
