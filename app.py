@@ -17,7 +17,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, StreamingResponse
 from pydantic import BaseModel
 
-from cluster_trust_env import ClusterTrustEnv
+from cluster_trust_env import CLUSTER_TASK_CONFIG, ClusterTrustEnv
 from difficulty_controller import GLOBAL_DIFFICULTY_CONTROLLER
 from environment import SentinelEnv
 from mission_context import build_orchestrator_prompt, mission_for_task, problem_statement
@@ -130,6 +130,19 @@ def _get_env(session_id: str) -> SentinelEnv | ClusterTrustEnv:
     return env
 
 
+def _get_cluster_env(session_id: str) -> ClusterTrustEnv:
+    env = _get_env(session_id)
+    if not isinstance(env, ClusterTrustEnv):
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "Session is in abstract SentinelEnv mode. Start a cluster session via "
+                "POST /cluster/reset (or POST /reset with mode='cluster')."
+            ),
+        )
+    return env
+
+
 def _resolve_env_mode(task_type: str | None, mode: str | None = None) -> tuple[str, str]:
     requested_task = task_type or "task3"
     requested_mode = (mode or "").lower()
@@ -218,6 +231,27 @@ class StepRequest(BaseModel):
     reasoning:        str | None = None
 
 
+# Cluster-only request shapes. Kept separate from ResetRequest/StepRequest so
+# the OpenAPI schema makes the GPU-cluster contract explicit.
+
+CLUSTER_ACTION_TYPES = ("allocate", "preempt", "request_info", "verify", "tick")
+
+
+class ClusterResetRequest(BaseModel):
+    task_type: str | None = None       # "task1" | "task2" | "task3" (also accepts "cluster_task*")
+    seed:      int | None = None
+    adaptive:  bool       = False
+
+
+class ClusterStepRequest(BaseModel):
+    action_type: str                   # allocate | preempt | request_info | verify | tick
+    job_id:      str | None = None
+    gpu_id:      str | None = None
+    worker_id:   str | None = None
+    force_flag:  bool | None = None
+    reasoning:   str | None = None
+
+
 # ---------------------------------------------------------------------------
 # Endpoints
 # ---------------------------------------------------------------------------
@@ -255,6 +289,11 @@ def root():
                 "/grader", "/reward-report", "/difficulty", "/stream", "/trust-dashboard",
                 "/cluster-dashboard",
                 "/reset", "/step", "/state",
+                "/cluster", "/cluster/metadata", "/cluster/tasks",
+                "/cluster/reset", "/cluster/step", "/cluster/state",
+                "/cluster/gpus", "/cluster/jobs", "/cluster/workers",
+                "/cluster/audit", "/cluster/audit/investigate",
+                "/cluster/ai-failure-coverage", "/cluster/reward-report", "/cluster/stream",
             ],
         }
     )
@@ -308,6 +347,11 @@ def api_root():
             "/grader", "/reward-report", "/difficulty", "/stream", "/trust-dashboard",
             "/cluster-dashboard",
             "/reset", "/step", "/state",
+            "/cluster", "/cluster/metadata", "/cluster/tasks",
+            "/cluster/reset", "/cluster/step", "/cluster/state",
+            "/cluster/gpus", "/cluster/jobs", "/cluster/workers",
+            "/cluster/audit", "/cluster/audit/investigate",
+            "/cluster/ai-failure-coverage", "/cluster/reward-report", "/cluster/stream",
         ],
     }
 
@@ -369,8 +413,13 @@ def metadata():
         },
         "adaptive_curriculum": GLOBAL_DIFFICULTY_CONTROLLER.state(),
         "cluster_mode": {
-            "how_to_enable": "POST /reset with {\"mode\":\"cluster\",\"task_type\":\"task3\"} or {\"task_type\":\"cluster_task3\"}.",
+            "how_to_enable": (
+                "POST /cluster/reset with {\"task_type\":\"task3\"} (preferred), "
+                "or POST /reset with {\"mode\":\"cluster\",\"task_type\":\"task3\"} "
+                "or {\"task_type\":\"cluster_task3\"}."
+            ),
             "live_dashboard": "/cluster-dashboard?session_id=<session_id>",
+            "api_root":       "/cluster",
         },
     }
 
@@ -576,6 +625,228 @@ def mcp(body: dict[str, Any]):
 
     else:
         raise HTTPException(status_code=400, detail=f"Unknown method: {method}")
+
+
+# ---------------------------------------------------------------------------
+# Cluster API (GPU cluster trust mission, namespaced under /cluster/*)
+# ---------------------------------------------------------------------------
+
+
+def _cluster_task_type(raw: str | None) -> str:
+    task_type = (raw or "task3").removeprefix("cluster_")
+    if task_type not in CLUSTER_TASK_CONFIG:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                f"Unknown cluster task_type '{raw}'. "
+                f"Expected one of: {', '.join(sorted(CLUSTER_TASK_CONFIG))}."
+            ),
+        )
+    return task_type
+
+
+@app.get("/cluster")
+def cluster_root():
+    return {
+        "name": "sentinel-cluster",
+        "summary": (
+            "GPU cluster trust calibration API. The orchestrator schedules jobs across "
+            "GPUs, audits worker reports, and routes around adversarial false completions "
+            "while keeping cluster health and AI reliability high."
+        ),
+        "session_lifecycle": [
+            "POST /cluster/reset -> {info.session_id}",
+            "POST /cluster/step?session_id=...",
+            "GET  /cluster/state?session_id=...   (or /cluster/stream for SSE)",
+        ],
+        "routes": [
+            "POST /cluster/reset",
+            "POST /cluster/step",
+            "GET  /cluster/state",
+            "GET  /cluster/gpus",
+            "GET  /cluster/jobs",
+            "GET  /cluster/workers",
+            "GET  /cluster/audit",
+            "GET  /cluster/audit/investigate",
+            "GET  /cluster/ai-failure-coverage",
+            "GET  /cluster/reward-report",
+            "GET  /cluster/stream",
+            "GET  /cluster/metadata",
+            "GET  /cluster/tasks",
+            "GET  /cluster-dashboard",
+        ],
+    }
+
+
+@app.get("/cluster/metadata")
+def cluster_metadata():
+    return {
+        "tasks": {
+            "task1": {**CLUSTER_TASK_CONFIG["task1"], "name": "Cluster Basics"},
+            "task2": {**CLUSTER_TASK_CONFIG["task2"], "name": "Unreliable Workers"},
+            "task3": {**CLUSTER_TASK_CONFIG["task3"], "name": "Full Adversarial Cluster"},
+        },
+        "action_types": {
+            "allocate":     {"description": "Place a queued job on a GPU and assign a worker.",
+                              "fields": ["job_id?", "gpu_id?", "worker_id?"]},
+            "preempt":      {"description": "Free a running job from its GPU.",
+                              "fields": ["job_id?"]},
+            "request_info": {"description": "Ask the assigned worker for a fresh progress report.",
+                              "fields": ["job_id?", "worker_id?"]},
+            "verify":       {"description": "Audit a worker's report. Catches false completions and lying.",
+                              "fields": ["job_id?", "worker_id?", "force_flag?"]},
+            "tick":         {"description": "Advance the cluster clock without acting.",
+                              "fields": []},
+        },
+        "workers":   list(["S0", "S1", "S2", "S3", "S4"]),
+        "scoring":   "global_reward = weighted(orchestrator, resource_manager, auditor, worker) × cluster_health × ai_reliability_modifier",
+        "terminal":  "task1: jobs+util | task2: jobs+calibration+deadlines | task3: jobs+detection+plan_coherence+efficiency",
+        "controller": GLOBAL_DIFFICULTY_CONTROLLER.state(),
+    }
+
+
+@app.get("/cluster/tasks")
+def cluster_tasks():
+    descriptions = {
+        "task1": "10-job warmup. No adversary, no GPU failures. Learn the allocate/preempt/tick loop.",
+        "task2": "20-job stream with unreliable/slow/degrading workers and rare GPU failures.",
+        "task3": "30-job adversarial cluster: false memory reports, false completions, poisoned reward claims.",
+    }
+    out: dict[str, Any] = {}
+    for tid, cfg in CLUSTER_TASK_CONFIG.items():
+        out[tid] = {
+            "difficulty":          {"task1": "easy", "task2": "medium", "task3": "hard"}[tid],
+            "description":         descriptions[tid],
+            "adversary_active":    cfg["adversary"],
+            "jobs":                cfg["jobs"],
+            "gpus":                cfg["gpus"],
+            "max_steps":           cfg["max_steps"],
+            "failure_probability": cfg["failure_probability"],
+        }
+    return out
+
+
+@app.post("/cluster/reset")
+def cluster_reset(req: ClusterResetRequest = ClusterResetRequest()):
+    task_type = _cluster_task_type(req.task_type)
+    env = ClusterTrustEnv()
+    result = env.reset(task_type=task_type, seed=req.seed, adaptive=req.adaptive)
+    session_id = result["info"]["session_id"]
+    _sessions.set(session_id, env)
+    return _add_demo_context(result, env)
+
+
+@app.post("/cluster/step")
+def cluster_step(req: ClusterStepRequest, session_id: str = Query(...)):
+    if req.action_type not in CLUSTER_ACTION_TYPES:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unknown cluster action_type '{req.action_type}'. Expected one of: {', '.join(CLUSTER_ACTION_TYPES)}.",
+        )
+    env = _get_cluster_env(session_id)
+    try:
+        result = env.step(req.model_dump(exclude_none=True))
+    except (RuntimeError, ValueError) as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+    if result["done"]:
+        _sessions.pop(session_id)
+    else:
+        _add_demo_context(result, env)
+    return result
+
+
+@app.get("/cluster/state")
+def cluster_state(session_id: str = Query(...)):
+    env = _get_cluster_env(session_id)
+    return env.state()
+
+
+@app.get("/cluster/gpus")
+def cluster_gpus(session_id: str = Query(...), include_hidden: bool = Query(False)):
+    env = _get_cluster_env(session_id)
+    return {
+        "summary": env._pool.summary(),
+        "gpus":    env._pool.snapshot(include_hidden=include_hidden),
+    }
+
+
+@app.get("/cluster/jobs")
+def cluster_jobs(
+    session_id: str = Query(...),
+    include_hidden: bool = Query(False),
+    deadline_window: int = Query(10, ge=1, le=240),
+):
+    env = _get_cluster_env(session_id)
+    return {
+        "summary": env._jobs.summary(),
+        "jobs":    env._jobs.snapshot(include_hidden=include_hidden),
+        "deadline_pressure": [
+            job.job_id for job in env._jobs.deadline_pressure(env.step_count, window=deadline_window)
+        ],
+    }
+
+
+@app.get("/cluster/workers")
+def cluster_workers(session_id: str = Query(...)):
+    env = _get_cluster_env(session_id)
+    return {
+        "available":              env._workers.available_ids(),
+        "trust_snapshot":         env._trust.snapshot(),
+        "behavioral_fingerprints": env._trust.behavioral_fingerprints(),
+        "public_ground_truth_reliability": env._workers.public_ground_truth_reliability(),
+    }
+
+
+@app.get("/cluster/audit")
+def cluster_audit(session_id: str = Query(...)):
+    env = _get_cluster_env(session_id)
+    return env._audit.snapshot()
+
+
+@app.get("/cluster/audit/investigate")
+def cluster_audit_investigate(
+    session_id: str = Query(...),
+    agent_id:   str = Query(..., description="Worker public id (S0..S4) or 'cluster'/'adversary'/'auditor'."),
+    window:     int = Query(10, ge=1, le=240),
+):
+    env = _get_cluster_env(session_id)
+    return env._audit.investigate(agent_id, window=window)
+
+
+@app.get("/cluster/ai-failure-coverage")
+def cluster_ai_failure_coverage(session_id: str = Query(...)):
+    env = _get_cluster_env(session_id)
+    return env.ai_failure_coverage()
+
+
+@app.get("/cluster/reward-report")
+def cluster_reward_report(session_id: str = Query(...)):
+    env = _get_cluster_env(session_id)
+    return env.reward_report()
+
+
+@app.get("/cluster/stream")
+async def cluster_stream(session_id: str = Query(...)):
+    async def event_gen():
+        while True:
+            env = _sessions.get(session_id)
+            if env is None or not isinstance(env, ClusterTrustEnv):
+                yield (
+                    "event: close\n"
+                    "data: {\"reason\":\"session_not_found_or_not_cluster\"}\n\n"
+                )
+                break
+            yield f"data: {json.dumps(env.stream_snapshot())}\n\n"
+            if env.done:
+                break
+            await asyncio.sleep(0.5)
+
+    return StreamingResponse(
+        event_gen(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
 
 
 def _trust_dashboard_html(session_id: str) -> str:

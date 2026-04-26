@@ -293,7 +293,7 @@ export default function Page() {
         </div>
         <div className="footer-right">
           BUILD 2.4.1 // MARL-FRAMEWORK // MIT LICENSE<br />
-          © 2025 SENTINEL LAB. ALL RIGHTS RESERVED.
+          © 2025 THE_BOYS. ALL RIGHTS RESERVED.
         </div>
       </footer>
     </>
