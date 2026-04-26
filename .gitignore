@@ -71,6 +71,7 @@ datasets/
 # =========================
 # BUILD / OUTPUT
 # =========================
+node_modules/
 dist/
 build/
 out/
