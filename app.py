@@ -12,6 +12,7 @@ from threading import RLock
 from typing import Any
 
 from fastapi import FastAPI, HTTPException, Query
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, StreamingResponse
 from pydantic import BaseModel
@@ -34,6 +35,15 @@ app = FastAPI(
         "dynamic trust calibration across adversarial long-horizon tasks."
     ),
     version="1.0.0",
+)
+
+# Add CORS middleware to allow browser requests from frontend
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allow all origins (use specific domains in production)
+    allow_credentials=True,
+    allow_methods=["*"],  # Allow all HTTP methods (GET, POST, OPTIONS, etc.)
+    allow_headers=["*"],  # Allow all headers
 )
 
 @dataclass
@@ -211,6 +221,8 @@ class StepRequest(BaseModel):
 # ---------------------------------------------------------------------------
 # Endpoints
 # ---------------------------------------------------------------------------
+
+
 
 @app.get("/health")
 def health():
