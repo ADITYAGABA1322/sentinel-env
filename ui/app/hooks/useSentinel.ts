@@ -9,6 +9,8 @@ import type {
 
 /* ── helpers ──────────────────────────────────────────── */
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
+
 function bestSpec(obs: Observation | null): string {
   if (!obs) return "S0";
   return [...obs.available_specialists].sort(
@@ -92,12 +94,12 @@ export function useSentinel() {
 
   /* load evaluation data once */
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/assets/evaluation_results.json`)
+    fetch(`${API_BASE}/assets/evaluation_results.json`)
       .then((r) => r.json())
       .then(setEval)
       .catch(() => null);
 
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/assets/trained_policy_replay.jsonl`)
+    fetch(`${API_BASE}/assets/trained_policy_replay.jsonl`)
       .then((r) => r.ok ? r.text() : "")
       .then((txt) => {
         const table = new Map<string, ReplayRow>();
@@ -151,7 +153,7 @@ export function useSentinel() {
       const payload = { task_type: t, seed: s };
       setLastReq({ method: "POST", path: "/reset", body: payload });
       try {
-        const res  = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reset`, {
+        const res  = await fetch(`${API_BASE}/reset`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
@@ -203,7 +205,7 @@ export function useSentinel() {
       };
       setLastReq({ method: "POST", path: `/step?session_id=${sid}`, body: payload });
       try {
-        const res  = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/step?session_id=${encodeURIComponent(sid)}`, {
+        const res  = await fetch(`${API_BASE}/step?session_id=${encodeURIComponent(sid)}`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
