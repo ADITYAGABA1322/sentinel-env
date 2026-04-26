@@ -30,7 +30,7 @@ function trustColor(t: number) {
 export default function AgentTrustMonitor({
   observation, trustDeltas, activeSpec, events, running, totalReward,
 }: Props) {
-  const agents = observation?.available_specialists ?? ["S0", "S1", "S2", "S3", "S4"];
+  const agents = observation?.available_specialists || observation?.available_workers || ["S0", "S1", "S2", "S3", "S4"];
   const trust = observation?.trust_snapshot ?? {};
   const lastReward = observation?.last_reward ?? 0;
 

@@ -10,7 +10,7 @@ export default function TrustTimeline({
   observation: Observation | null;
   trustDeltas: Record<string, number>;
 }) {
-  const ids = observation?.available_specialists ?? ["S0", "S1", "S2", "S3", "S4"];
+  const ids = observation?.available_specialists ?? observation?.available_workers ?? ["S0", "S1", "S2", "S3", "S4"];
   return (
     <div className="tl">
       {ids.map((id) => {

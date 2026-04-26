@@ -14,6 +14,7 @@ export type Observation = {
   subtasks_total: number;
   subtasks_remaining: number;
   available_specialists: string[];
+  available_workers?: string[];
   trust_snapshot: Record<string, number>;
   stakes_level: number;
   step_count: number;
@@ -21,6 +22,7 @@ export type Observation = {
   last_action_summary: string | null;
   last_reward: number;
   episode_status: string;
+  gpu_pool?: any[];
 };
 
 export type Reward = {
@@ -41,6 +43,7 @@ export type StepResult = {
     score: number;
     adversarial_detections?: number;
     adversarial_poisonings?: number;
+    environment_mode?: string;
   };
 };
 

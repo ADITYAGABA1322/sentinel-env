@@ -17,7 +17,7 @@ export default function SpecialistNetwork({
   trustDeltas: Record<string, number>;
   activeSpec: string | null;
 }) {
-  const ids = observation?.available_specialists ?? ["S0", "S1", "S2", "S3", "S4"];
+  const ids = observation?.available_specialists || observation?.available_workers || ["S0", "S1", "S2", "S3", "S4"];
   return (
     <div className="net">
       <svg className="net-svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">

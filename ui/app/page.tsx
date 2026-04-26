@@ -256,7 +256,11 @@ export default function Page() {
       <div className="divider" />
 
       {/* GPU CLUSTER */}
-      <GPUClusterPanel />
+      <GPUClusterPanel 
+        sessionId={s.info?.session_id} 
+        mode={s.info?.environment_mode} 
+        gpuPool={s.observation?.gpu_pool}
+      />
 
       <div className="divider" />
 

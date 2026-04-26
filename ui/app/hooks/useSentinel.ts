@@ -9,13 +9,16 @@ import type {
 
 /* ── helpers ──────────────────────────────────────────── */
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
+const API_BASE = typeof window !== "undefined" 
+  ? (process.env.NEXT_PUBLIC_API_URL || (window.location.port === "3000" || window.location.port === "3458" ? "http://127.0.0.1:7860" : ""))
+  : "";
 
 function bestSpec(obs: Observation | null): string {
   if (!obs) return "S0";
-  return [...obs.available_specialists].sort(
+  const ids = obs.available_specialists || obs.available_workers || [];
+  return [...ids].sort(
     (a, b) => (obs.trust_snapshot[b] ?? 0.5) - (obs.trust_snapshot[a] ?? 0.5),
-  )[0];
+  )[0] || "S0";
 }
 
 function heuristicMove(obs: Observation | null) {
@@ -29,9 +32,8 @@ function heuristicMove(obs: Observation | null) {
 
 function randomMove(obs: Observation | null) {
   if (!obs) return { action: "delegate" as ActionType, specialist: "S0", trust: 0.5 };
-  const sp = obs.available_specialists[
-    Math.floor(Math.random() * obs.available_specialists.length)
-  ] || "S0";
+  const ids = obs.available_specialists || obs.available_workers || [];
+  const sp = ids[Math.floor(Math.random() * ids.length)] || "S0";
   return { action: "delegate" as ActionType, specialist: sp, trust: obs.trust_snapshot[sp] ?? 0.5 };
 }
 
@@ -122,7 +124,8 @@ export function useSentinel() {
   const trustDeltas = useMemo(() => {
     if (!observation) return {};
     const d: Record<string, number> = {};
-    for (const id of observation.available_specialists) {
+    const ids = observation.available_specialists || observation.available_workers || [];
+    for (const id of ids) {
       d[id] = (observation.trust_snapshot[id] ?? 0.5) - (prevTrust[id] ?? 0.5);
     }
     return d;
@@ -150,10 +153,10 @@ export function useSentinel() {
       const s = nextSeed ?? seed;
       setRunning(true);
       abortRef.current = false;
-      const payload = { task_type: t, seed: s };
+      const payload = { task_type: t, seed: s, mode: "cluster" };
       setLastReq({ method: "POST", path: "/reset", body: payload });
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reset`, {
+        const res = await fetch(`${API_BASE}/reset`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
@@ -195,17 +198,20 @@ export function useSentinel() {
 
       setActiveSpec(specialist);
 
+      const isCluster = active?.info?.environment_mode === "cluster" || sessionId === "cluster";
+      const mappedAction = (isCluster && action === "delegate") ? "allocate" : action;
+
       const payload = {
         session_id: sid,
         task_type: obs.task_type,
-        action_type: action,
+        action_type: mappedAction,
         specialist_id: specialist,
         subtask_response: action === "solve_independently" ? "SELF_SOLVED" : null,
         reasoning: `ui-${action}${specialist ? `-${specialist}` : ""}`,
       };
       setLastReq({ method: "POST", path: `/step?session_id=${sid}`, body: payload });
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/step?session_id=${encodeURIComponent(sid)}`, {
+        const res = await fetch(`${API_BASE}/step?session_id=${encodeURIComponent(sid)}`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
