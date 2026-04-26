@@ -79,8 +79,13 @@ Deployment contract: run one server worker for the submitted Space. Active `Sent
 ## Live Submission Targets
 
 - GitHub: `https://github.com/ADITYAGABA1322/sentinel-env`
-- Hugging Face Space: `https://xcodeaddy-sentinel-env.hf.space`
+- Hugging Face Space repo/settings: `https://huggingface.co/spaces/XcodeAddy/sentinel-env`
+- Hugging Face live app: `https://xcodeaddy-sentinel-env.hf.space`
 - OpenEnv base URL: `https://xcodeaddy-sentinel-env.hf.space`
+
+Local note: run uvicorn with `--host 0.0.0.0`, but open the app in a browser at
+`http://127.0.0.1:7860/` or `http://localhost:7860/`. `0.0.0.0` is a bind
+address, not the page URL to demo.
 
 ## Specialist Behaviors
 

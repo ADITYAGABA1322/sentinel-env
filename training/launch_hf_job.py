@@ -9,7 +9,9 @@ from textwrap import dedent
 from huggingface_hub import run_job
 
 
-DEFAULT_IMAGE = "pytorch/pytorch:2.6.0-cuda12.4-cudnn9-devel"
+# Current Unsloth pulls torchao, which expects torch >= 2.11. Keep the Jobs
+# image aligned so GRPO imports fail fast only for real code issues.
+DEFAULT_IMAGE = "pytorch/pytorch:2.11.0-cuda12.8-cudnn9-devel"
 DEFAULT_REPO = "https://github.com/ADITYAGABA1322/sentinel-env"
 DEFAULT_MODEL = "unsloth/Qwen2.5-0.5B-Instruct"
 
@@ -27,6 +29,14 @@ def bootstrap_repo(repo_url: str) -> list[str]:
         "python -m pip install --upgrade pip",
         "pip install -r requirements.txt",
         "pip install -r requirements-train.txt",
+        (
+            "python -c \"import torch; "
+            "print('torch', torch.__version__); "
+            "print('gpu', torch.cuda.get_device_name() if torch.cuda.is_available() else 'none'); "
+            "from transformers import PreTrainedModel; "
+            "from trl import GRPOConfig, GRPOTrainer; "
+            "print('training imports ok')\""
+        ),
     ]
 
 
@@ -34,8 +44,11 @@ def gpu_test_command() -> str:
     return "python -c 'import torch; print(torch.cuda.get_device_name())'"
 
 
-def train_command(args: argparse.Namespace) -> str:
+def train_command(args: argparse.Namespace, train: bool = True) -> str:
     lines = bootstrap_repo(args.repo_url)
+    if not train:
+        return shell_join(lines)
+
     lines.append(
         " ".join(
             [
@@ -93,7 +106,11 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Launch SENTINEL training on Hugging Face Jobs without shell quoting pain."
     )
-    parser.add_argument("--mode", choices=["gpu-test", "train-smoke", "train-full"], default="gpu-test")
+    parser.add_argument(
+        "--mode",
+        choices=["gpu-test", "import-smoke", "train-smoke", "train-full"],
+        default="gpu-test",
+    )
     parser.add_argument("--namespace", default=os.environ.get("HF_NAMESPACE", "XcodeAddy"))
     parser.add_argument("--flavor", default="a10g-small")
     parser.add_argument("--timeout", default="2h")
@@ -130,7 +147,12 @@ def main() -> None:
             ).strip()
         )
 
-    command = gpu_test_command() if args.mode == "gpu-test" else train_command(args)
+    if args.mode == "gpu-test":
+        command = gpu_test_command()
+    elif args.mode == "import-smoke":
+        command = train_command(args, train=False)
+    else:
+        command = train_command(args)
     print("Launching HF Job:")
     print(f"  mode      = {args.mode}")
     print(f"  namespace = {args.namespace}")

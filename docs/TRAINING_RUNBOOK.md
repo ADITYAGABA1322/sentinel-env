@@ -148,6 +148,29 @@ Use a Hugging Face token in Colab for:
 
 The Space itself does not need GPU to run the replay demo.
 
+## Hugging Face App URLs
+
+Use these two Hugging Face URLs for different jobs:
+
+```text
+https://huggingface.co/spaces/XcodeAddy/sentinel-env
+```
+
+This is the Space repository/settings page. Use it to inspect files, Settings,
+hardware, build logs, variables, secrets, and commits. It is not the iframe app
+URL you demo to judges.
+
+```text
+https://xcodeaddy-sentinel-env.hf.space/
+```
+
+This is the real live app URL. Use this for the dashboard, API smoke tests, and
+OpenEnv base URL.
+
+When running locally, start uvicorn with `--host 0.0.0.0`, but open the browser
+at `http://127.0.0.1:7860/` or `http://localhost:7860/`. Do not browse to
+`http://0.0.0.0:7860/`; `0.0.0.0` is only a bind address.
+
 ## Hugging Face Credits
 
 Best use:
@@ -155,10 +178,36 @@ Best use:
 - keep the Space on CPU for normal judging,
 - optionally upgrade the Space to T4 only during the final live demo if the UI
   needs extra responsiveness,
-- avoid doing full training inside the Space.
+- avoid doing full training inside the Space,
+- use Hugging Face Jobs or Colab for the actual GRPO run.
 
-Training belongs in Colab. The Space is for serving the environment and replay
-demo.
+The Space is for serving the environment and replay demo. Training belongs in
+Colab or in a Hugging Face GPU Job.
+
+HF Jobs smoke path:
+
+```bash
+.venv/bin/python training/launch_hf_job.py \
+  --mode import-smoke \
+  --timeout 45m
+
+.venv/bin/python training/launch_hf_job.py \
+  --mode train-smoke \
+  --episodes 50 \
+  --timeout 2h
+```
+
+If `import-smoke` passes, run the full job:
+
+```bash
+.venv/bin/python training/launch_hf_job.py \
+  --mode train-full \
+  --episodes 200 \
+  --timeout 4h
+```
+
+The launcher uses `pytorch/pytorch:2.11.0-cuda12.8-cudnn9-devel` because the
+current Unsloth stack pulls `torchao`, which expects torch `>=2.11`.
 
 ## Success Criteria
 
