@@ -148,7 +148,6 @@ Use a Hugging Face token in Colab for:
 
 The Space itself does not need GPU to run the replay demo.
 
-<<<<<<< HEAD
 ## Hugging Face App URLs
 
 Use these two Hugging Face URLs for different jobs:
@@ -172,8 +171,6 @@ When running locally, start uvicorn with `--host 0.0.0.0`, but open the browser
 at `http://127.0.0.1:7860/` or `http://localhost:7860/`. Do not browse to
 `http://0.0.0.0:7860/`; `0.0.0.0` is only a bind address.
 
-=======
->>>>>>> a89a58750afb4cf3e8d49f13fe66d7c227911387
 ## Hugging Face Credits
 
 Best use:
@@ -181,7 +178,6 @@ Best use:
 - keep the Space on CPU for normal judging,
 - optionally upgrade the Space to T4 only during the final live demo if the UI
   needs extra responsiveness,
-<<<<<<< HEAD
 - avoid doing full training inside the Space,
 - use Hugging Face Jobs or Colab for the actual GRPO run.
 
@@ -212,12 +208,6 @@ If `import-smoke` passes, run the full job:
 
 The launcher uses `pytorch/pytorch:2.11.0-cuda12.8-cudnn9-devel` because the
 current Unsloth stack pulls `torchao`, which expects torch `>=2.11`.
-=======
-- avoid doing full training inside the Space.
-
-Training belongs in Colab. The Space is for serving the environment and replay
-demo.
->>>>>>> a89a58750afb4cf3e8d49f13fe66d7c227911387
 
 ## Success Criteria
 

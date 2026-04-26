@@ -1,12 +1,7 @@
 "use client";
 
-<<<<<<< HEAD
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-=======
-import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
->>>>>>> a89a58750afb4cf3e8d49f13fe66d7c227911387
 
 type NodeStatus = "ACTIVE" | "IDLE" | "OVERLOADED" | "FAILED";
 
@@ -18,34 +13,18 @@ interface GPUNode {
   status: NodeStatus;
 }
 
-<<<<<<< HEAD
 export default function GPUClusterPanel() {
   const [mounted, setMounted] = useState(false);
   const [nodes, setNodes] = useState<GPUNode[]>([
     { id: "GPU-1", utilization: 45, memory: 32, load: 1.2, status: "ACTIVE" },
     { id: "GPU-2", utilization: 12, memory: 8, load: 0.4, status: "IDLE" },
     { id: "GPU-3", utilization: 88, memory: 64, load: 2.8, status: "ACTIVE" },
-=======
-interface GPUClusterPanelProps {
-  sessionId?: string;
-  mode?: string;
-  gpuPool?: any[]; // Live data from observation
-}
-
-export default function GPUClusterPanel({ sessionId, mode, gpuPool }: GPUClusterPanelProps) {
-  const [mounted, setMounted] = useState(false);
-  const [nodes, setNodes] = useState<GPUNode[]>([
-    { id: "GPU-1", utilization: 0, memory: 0, load: 0, status: "IDLE" },
-    { id: "GPU-2", utilization: 0, memory: 0, load: 0, status: "IDLE" },
-    { id: "GPU-3", utilization: 0, memory: 0, load: 0, status: "IDLE" },
->>>>>>> a89a58750afb4cf3e8d49f13fe66d7c227911387
     { id: "GPU-4", utilization: 0, memory: 0, load: 0, status: "IDLE" },
   ]);
 
   const [avgLoad, setAvgLoad] = useState(0);
   const [jitter, setJitter] = useState(0.45);
 
-<<<<<<< HEAD
   useEffect(() => {
     setMounted(true);
     const interval = setInterval(() => {
@@ -73,46 +52,12 @@ export default function GPUClusterPanel({ sessionId, mode, gpuPool }: GPUCluster
     }, 1500);
     return () => clearInterval(interval);
   }, []);
-=======
-  useEffect(() => { setMounted(true); }, []);
-
-  // ── LIVE SYNC FROM OBSERVATION ────────────────────────────
-  useEffect(() => {
-    if (gpuPool && Array.isArray(gpuPool)) {
-      setNodes(gpuPool.slice(0, 4).map((g: any) => {
-        const util = (g.memory_used / g.memory_total) * 100;
-        let status = g.state.toUpperCase();
-        if (status === "ALLOCATED") status = "ACTIVE";
-        
-        return {
-          id: g.id,
-          utilization: util,
-          memory: util,
-          load: (util / 100) * 4.2,
-          status: status as NodeStatus
-        };
-      }));
-    } else if (!sessionId || mode !== "cluster") {
-      // Fallback to subtle idle simulation if no live data
-      const timer = setInterval(() => {
-        setJitter(Math.random() * 0.5);
-        setNodes(prev => prev.map(n => ({
-          ...n,
-          utilization: Math.max(0, n.utilization + (Math.random() - 0.5) * 2),
-          load: n.utilization * 0.04
-        })));
-      }, 2000);
-      return () => clearInterval(timer);
-    }
-  }, [gpuPool, sessionId, mode]);
->>>>>>> a89a58750afb4cf3e8d49f13fe66d7c227911387
 
   useEffect(() => {
     const total = nodes.reduce((acc, n) => acc + n.utilization, 0);
     setAvgLoad(total / nodes.length);
   }, [nodes]);
 
-<<<<<<< HEAD
   if (!mounted) {
     return (
       <section className="section-block" id="gpu-cluster" style={{ opacity: 0 }}>
@@ -121,28 +66,19 @@ export default function GPUClusterPanel({ sessionId, mode, gpuPool }: GPUCluster
       </section>
     );
   }
-=======
-  if (!mounted) return null;
->>>>>>> a89a58750afb4cf3e8d49f13fe66d7c227911387
 
   return (
     <section className="section-block" id="gpu-cluster">
       <div className="section-label">03 // COMPUTE RESOURCES</div>
       <h2 className="section-title">GPU Compute Clusters</h2>
       <p className="section-desc">
-<<<<<<< HEAD
         Real-time telemetry from the underlying inference hardware.
         High cluster utilization may introduce latency in the trust calibration loop.
-=======
-        Real-time telemetry from the underlying inference hardware. 
-        Note how cluster utilization spikes as the RL model allocates worker jobs.
->>>>>>> a89a58750afb4cf3e8d49f13fe66d7c227911387
       </p>
 
       <div className="cluster-grid">
         {nodes.map((node) => (
           <div key={node.id} className={`card node-card ${node.status.toLowerCase()}`}>
-<<<<<<< HEAD
             <div className="card-id">{node.id} // NODE-0{node.id.split("-")[1]}</div>
 
             <div className="node-status-badge">
@@ -150,15 +86,6 @@ export default function GPUClusterPanel({ sessionId, mode, gpuPool }: GPUCluster
                 background: node.status === "OVERLOADED" ? "var(--red)" :
                   node.status === "FAILED" ? "#555" :
                     node.status === "IDLE" ? "var(--muted)" : "var(--green)"
-=======
-            <div className="card-id">{node.id} // CORE-AX-{node.id.split("-")[1] || "0X"}</div>
-            
-            <div className="node-status-badge">
-              <div className="status-dot" style={{ 
-                background: node.status === "ACTIVE" ? "var(--green)" :
-                            node.status === "OVERLOADED" ? "var(--red)" : 
-                            node.status === "FAILED" ? "#555" : "var(--muted)" 
->>>>>>> a89a58750afb4cf3e8d49f13fe66d7c227911387
               }} />
               {node.status}
             </div>
@@ -169,16 +96,9 @@ export default function GPUClusterPanel({ sessionId, mode, gpuPool }: GPUCluster
                 <span style={{ color: "var(--cyan)" }}>{Math.round(node.utilization)}%</span>
               </div>
               <div className="metric-bar-bg">
-<<<<<<< HEAD
                 <motion.div
                   className="metric-bar-fill"
                   animate={{ width: `${node.utilization}%` }}
-=======
-                <motion.div 
-                  className="metric-bar-fill" 
-                  animate={{ width: `${node.utilization}%` }}
-                  transition={{ type: "spring", stiffness: 100, damping: 20 }}
->>>>>>> a89a58750afb4cf3e8d49f13fe66d7c227911387
                   style={{ background: node.utilization > 90 ? "var(--red)" : "var(--cyan)" } as any}
                 />
               </div>
@@ -190,16 +110,9 @@ export default function GPUClusterPanel({ sessionId, mode, gpuPool }: GPUCluster
                 <span style={{ color: "var(--green)" }}>{Math.round(node.memory)}%</span>
               </div>
               <div className="metric-bar-bg">
-<<<<<<< HEAD
                 <motion.div
                   className="metric-bar-fill"
                   animate={{ width: `${node.memory}%` }}
-=======
-                <motion.div 
-                  className="metric-bar-fill" 
-                  animate={{ width: `${node.memory}%` }}
-                  transition={{ type: "spring", stiffness: 100, damping: 20 }}
->>>>>>> a89a58750afb4cf3e8d49f13fe66d7c227911387
                   style={{ background: "var(--green)" } as any}
                 />
               </div>
@@ -223,11 +136,7 @@ export default function GPUClusterPanel({ sessionId, mode, gpuPool }: GPUCluster
         <div className="cluster-total-load">
           <span className="label">TOTAL CLUSTER LOAD</span>
           <div className="load-meter-bg">
-<<<<<<< HEAD
             <motion.div
-=======
-            <motion.div 
->>>>>>> a89a58750afb4cf3e8d49f13fe66d7c227911387
               className="load-meter-fill"
               animate={{ width: `${avgLoad}%` }}
               style={{ background: avgLoad > 80 ? "var(--red)" : "var(--cyan)", color: avgLoad > 80 ? "var(--red)" : "var(--cyan)" } as any}

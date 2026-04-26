@@ -1,5 +1,4 @@
 unsloth[colab-new] @ git+https://github.com/unslothai/unsloth.git
-<<<<<<< HEAD
 trl==0.24.0
 transformers==4.57.6
 datasets==4.3.0
@@ -10,15 +9,3 @@ matplotlib==3.10.9
 seaborn==0.13.2
 pandas==3.0.2
 huggingface_hub>=0.36,<1
-=======
-trl>=0.18.2,<0.25,!=0.19.0
-transformers>=4.56,<5
-datasets>=3.0,<5
-accelerate>=1.4
-peft>=0.14
-bitsandbytes>=0.45
-matplotlib
-seaborn
-pandas
-huggingface_hub
->>>>>>> a89a58750afb4cf3e8d49f13fe66d7c227911387

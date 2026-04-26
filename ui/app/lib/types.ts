@@ -14,10 +14,6 @@ export type Observation = {
   subtasks_total: number;
   subtasks_remaining: number;
   available_specialists: string[];
-<<<<<<< HEAD
-=======
-  available_workers?: string[];
->>>>>>> a89a58750afb4cf3e8d49f13fe66d7c227911387
   trust_snapshot: Record<string, number>;
   stakes_level: number;
   step_count: number;
@@ -25,10 +21,6 @@ export type Observation = {
   last_action_summary: string | null;
   last_reward: number;
   episode_status: string;
-<<<<<<< HEAD
-=======
-  gpu_pool?: any[];
->>>>>>> a89a58750afb4cf3e8d49f13fe66d7c227911387
 };
 
 export type Reward = {
@@ -49,10 +41,6 @@ export type StepResult = {
     score: number;
     adversarial_detections?: number;
     adversarial_poisonings?: number;
-<<<<<<< HEAD
-=======
-    environment_mode?: string;
->>>>>>> a89a58750afb4cf3e8d49f13fe66d7c227911387
   };
 };
 
