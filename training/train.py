@@ -174,6 +174,7 @@ def run_grpo(args) -> None:
         learning_rate=args.learning_rate,
         num_train_epochs=args.epochs,
         per_device_train_batch_size=args.batch_size,
+        num_generations=args.num_generations,
         logging_steps=10,
         save_steps=50,
         max_prompt_length=args.max_seq_length,
@@ -210,6 +211,7 @@ def main() -> None:
     parser.add_argument("--learning-rate", type=float, default=5e-6)
     parser.add_argument("--max-seq-length", type=int, default=1024)
     parser.add_argument("--lora-rank", type=int, default=16)
+    parser.add_argument("--num-generations", type=int, default=2)
     args = parser.parse_args()
 
     if args.dry_run:

@@ -1,10 +1,10 @@
 unsloth[colab-new] @ git+https://github.com/unslothai/unsloth.git
-trl<0.13
-transformers>=4.46
-datasets
-accelerate
-peft
-bitsandbytes
+trl>=0.18.2,<0.25,!=0.19.0
+transformers>=4.56,<5
+datasets>=3.0,<5
+accelerate>=1.4
+peft>=0.14
+bitsandbytes>=0.45
 matplotlib
 seaborn
 pandas
