@@ -19,7 +19,7 @@ function bestSpec(obs: Observation | null): string {
 function heuristicMove(obs: Observation | null) {
   if (!obs) return { action: "delegate" as ActionType, specialist: "S0", trust: 0.5 };
   const sp = bestSpec(obs);
-  const t  = obs.trust_snapshot[sp] ?? 0.5;
+  const t = obs.trust_snapshot[sp] ?? 0.5;
   if (obs.stakes_level >= 0.7 && t < 0.65)
     return { action: "verify" as ActionType, specialist: sp, trust: t };
   return { action: "delegate" as ActionType, specialist: sp, trust: t };
@@ -66,25 +66,25 @@ function replayMove(
 function outcomeOf(reason: string): EventItem["outcome"] {
   const r = reason.toLowerCase();
   if (r.includes("poison") || r.includes("adversarial")) return "poisoned";
-  if (r.includes("block") || r.includes("verif"))         return "blocked";
-  if (r.includes("skip"))                                  return "skipped";
+  if (r.includes("block") || r.includes("verif")) return "blocked";
+  if (r.includes("skip")) return "skipped";
   return "success";
 }
 
 /* ── hook ─────────────────────────────────────────────── */
 
 export function useSentinel() {
-  const [view, setView]           = useState<ViewMode>("landing");
-  const [taskType, setTaskType]   = useState<TaskType>("task3");
-  const [seed, setSeed]           = useState(42);
+  const [view, setView] = useState<ViewMode>("landing");
+  const [taskType, setTaskType] = useState<TaskType>("task3");
+  const [seed, setSeed] = useState(42);
   const [sessionId, setSessionId] = useState<string | null>(null);
-  const [result, setResult]       = useState<StepResult | null>(null);
-  const [running, setRunning]     = useState(false);
-  const [events, setEvents]       = useState<EventItem[]>([]);
-  const [lastReq, setLastReq]     = useState<Record<string, unknown> | null>(null);
-  const [lastRes, setLastRes]     = useState<Record<string, unknown> | null>(null);
-  const [evaluation, setEval]     = useState<EvaluationData | null>(null);
-  const [replay, setReplay]       = useState<Map<string, ReplayRow>>(new Map());
+  const [result, setResult] = useState<StepResult | null>(null);
+  const [running, setRunning] = useState(false);
+  const [events, setEvents] = useState<EventItem[]>([]);
+  const [lastReq, setLastReq] = useState<Record<string, unknown> | null>(null);
+  const [lastRes, setLastRes] = useState<Record<string, unknown> | null>(null);
+  const [evaluation, setEval] = useState<EvaluationData | null>(null);
+  const [replay, setReplay] = useState<Map<string, ReplayRow>>(new Map());
   const [prevTrust, setPrevTrust] = useState<Record<string, number>>({});
   const [activeSpec, setActiveSpec] = useState<string | null>(null);
 
@@ -112,9 +112,9 @@ export function useSentinel() {
   }, []);
 
   const observation = result?.observation ?? null;
-  const info        = result?.info;
-  const reward      = result?.reward;
-  const done        = result?.done ?? false;
+  const info = result?.info;
+  const reward = result?.reward;
+  const done = result?.done ?? false;
 
   /* trust deltas */
   const trustDeltas = useMemo(() => {
@@ -131,11 +131,11 @@ export function useSentinel() {
   const proof = useMemo(() => {
     if (!evaluation) return null;
     return {
-      random:         evaluation.summary.random,
-      heuristic:      evaluation.summary.heuristic,
-      oracle:         evaluation.summary.oracle_lite,
-      trained:        evaluation.summary.trained,
-      task3Random:    evaluation.by_task.task3.random,
+      random: evaluation.summary.random,
+      heuristic: evaluation.summary.heuristic,
+      oracle: evaluation.summary.oracle_lite,
+      trained: evaluation.summary.trained,
+      task3Random: evaluation.by_task.task3.random,
       task3Heuristic: evaluation.by_task.task3.heuristic,
     };
   }, [evaluation]);
@@ -151,7 +151,7 @@ export function useSentinel() {
       const payload = { task_type: t, seed: s };
       setLastReq({ method: "POST", path: "/reset", body: payload });
       try {
-        const res  = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reset`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reset`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
@@ -180,9 +180,9 @@ export function useSentinel() {
       specialistOverride?: string,
       ctx?: StepResult | null,
     ): Promise<StepResult | null> => {
-      const active   = ctx ?? result;
-      const obs      = active?.observation ?? observation;
-      const sid      = active?.info.session_id ?? sessionId;
+      const active = ctx ?? result;
+      const obs = active?.observation ?? observation;
+      const sid = active?.info.session_id ?? sessionId;
       if (!sid || !obs || running || active?.done) return null;
 
       setRunning(true);
@@ -203,7 +203,7 @@ export function useSentinel() {
       };
       setLastReq({ method: "POST", path: `/step?session_id=${sid}`, body: payload });
       try {
-        const res  = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/step?session_id=${encodeURIComponent(sid)}`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/step?session_id=${encodeURIComponent(sid)}`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
