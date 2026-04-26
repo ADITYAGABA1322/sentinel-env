@@ -32,6 +32,13 @@ COPY difficulty_controller.py .
 COPY scenarios.py .
 COPY openenv.yaml .
 COPY inference.py .
+COPY adversary.py .
+COPY audit_ledger.py .
+COPY cluster_rewards.py .
+COPY cluster_trust_env.py .
+COPY cluster_workers.py .
+COPY gpu_pool.py .
+COPY job_queue.py .
 COPY README.md .
 COPY pyproject.toml .
 COPY server ./server
