@@ -33,6 +33,13 @@ outputs/*
 !outputs/baseline_comparison.png
 !outputs/baseline_scores.json
 !outputs/evaluation_results.json
+!outputs/eval_pre.json
+!outputs/eval_post.json
+!outputs/reward_report_task3_seed42.json
+!outputs/cluster_health_history.json
+!outputs/trained_policy_replay.jsonl
+!outputs/charts/
+!outputs/charts/*.png
 
 # =========================
 # OS FILES

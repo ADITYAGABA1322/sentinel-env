@@ -16,6 +16,7 @@ if str(ROOT) not in sys.path:
 from difficulty_controller import GLOBAL_DIFFICULTY_CONTROLLER
 from environment import SentinelEnv, _GROUND_TRUTH_RELIABILITY
 from sentinel_config import ADVERSARIAL_AWARENESS_STAKES
+from training.replay import replay_trained_policy
 
 
 Policy = Callable[[SentinelEnv, dict, random.Random], dict]
@@ -71,6 +72,8 @@ def _action(obs: dict, action_type: str, specialist_id: str | None) -> dict:
 
 def run_episode(policy_name: str, policy: Policy, task_type: str, seed: int, adaptive: bool = False) -> dict:
     rng = random.Random(seed)
+    if hasattr(policy, "set_episode"):
+        policy.set_episode(task_type, seed)
     env = SentinelEnv()
     result = env.reset(task_type=task_type, seed=seed, adaptive=adaptive)
     rewards: list[float] = []
@@ -186,13 +189,22 @@ def write_baseline_chart(payload: dict, path: Path) -> None:
     """Write a dependency-free PNG chart for README and onsite demos."""
     by_task = payload["by_task"]
     tasks = list(by_task.keys())
-    policies = [name for name in ("random", "heuristic", "oracle_lite") if any(name in by_task[t] for t in tasks)]
+    policies = [
+        name for name in ("random", "heuristic", "oracle_lite", "trained")
+        if any(name in by_task[t] for t in tasks)
+    ]
     colors = {
         "random": (239, 68, 68),
         "heuristic": (59, 130, 246),
         "oracle_lite": (16, 185, 129),
+        "trained": (168, 85, 247),
     }
-    labels = {"random": "RANDOM", "heuristic": "HEURISTIC", "oracle_lite": "ORACLE LITE"}
+    labels = {
+        "random": "RANDOM",
+        "heuristic": "HEURISTIC",
+        "oracle_lite": "ORACLE LITE",
+        "trained": "GRPO",
+    }
 
     width, height = 1200, 720
     canvas = bytearray([255, 255, 255] * width * height)
@@ -289,16 +301,28 @@ def main() -> None:
     parser.add_argument("--no-plot", action="store_true")
     parser.add_argument("--adaptive", action="store_true", help="Enable adaptive curriculum during evaluation.")
     parser.add_argument("--reset-difficulty", action="store_true", help="Reset adaptive controller before running.")
+    parser.add_argument(
+        "--policies",
+        default="random,heuristic,oracle_lite",
+        help="Comma-separated policies: random,heuristic,oracle_lite,trained.",
+    )
+    parser.add_argument("--replay", default="outputs/trained_policy_replay.jsonl", help="Replay JSONL for --policies trained.")
     args = parser.parse_args()
 
     if args.reset_difficulty:
         GLOBAL_DIFFICULTY_CONTROLLER.reset()
 
-    policies: dict[str, Policy] = {
+    available_policies: dict[str, Policy] = {
         "random": random_policy,
         "heuristic": heuristic_policy,
         "oracle_lite": oracle_lite_policy,
+        "trained": replay_trained_policy(ROOT / args.replay),
     }
+    requested = [name.strip() for name in args.policies.split(",") if name.strip()]
+    unknown = sorted(set(requested) - set(available_policies))
+    if unknown:
+        raise SystemExit(f"Unknown policies: {', '.join(unknown)}")
+    policies = {name: available_policies[name] for name in requested}
 
     tasks = ["task1", "task2", "task3"] if args.task == "all" else [args.task]
     rows = []

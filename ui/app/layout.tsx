@@ -2,13 +2,13 @@ import "./globals.css";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "SENTINEL",
+  title: "SENTINEL — Multi-Agent Trust Calibration",
   description:
-    "Trust-calibration environment for long-horizon multi-agent RL training."
+    "Train an orchestrator to decide who to trust, when to verify, and how to recover in long multi-agent tasks under adversarial pressure.",
 };
 
 export default function RootLayout({
-  children
+  children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
