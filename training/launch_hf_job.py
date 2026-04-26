@@ -6,7 +6,7 @@ import shlex
 import sys
 from textwrap import dedent
 
-from huggingface_hub import run_job
+from huggingface_hub import get_token, run_job
 
 
 # Current Unsloth pulls torchao, which expects torch >= 2.11. Keep the Jobs
@@ -26,6 +26,8 @@ def bootstrap_repo(repo_url: str) -> list[str]:
         "command -v git || (apt-get update && apt-get install -y git)",
         f"git clone {shlex.quote(repo_url)} sentinel-env",
         "cd sentinel-env",
+        "python -m venv --system-site-packages .job-venv || (apt-get update && apt-get install -y python3-venv && python -m venv --system-site-packages .job-venv)",
+        ". .job-venv/bin/activate",
         "python -m pip install --upgrade pip",
         "pip install -r requirements.txt",
         "pip install -r requirements-train.txt",
@@ -132,17 +134,19 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
-    token = os.environ.get("HF_TOKEN")
+    token = os.environ.get("HF_TOKEN") or get_token()
     if not token:
         raise SystemExit(
             dedent(
                 """
-                HF_TOKEN is not set.
+                No Hugging Face token was found.
 
-                Run:
+                Either run:
                   read -s HF_TOKEN
                   export HF_TOKEN
-                Then paste your Hugging Face write token.
+
+                Or log in once:
+                  .venv/bin/hf auth login --add-to-git-credential
                 """
             ).strip()
         )
