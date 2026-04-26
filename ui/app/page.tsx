@@ -78,7 +78,7 @@ export default function Page() {
               }}
               disabled={s.running}
             >
-              ▶ Launch Simulation
+              ▶️ Launch Simulation
             </button>
             <button
               className="btn-secondary"
@@ -191,7 +191,7 @@ export default function Page() {
           <div className="sim-controls-row">
             <span className="ctrl-label">POLICY:</span>
             <button className="btn-sm-ctrl" onClick={() => void s.autoRun("heuristic" as AutoPolicy)} disabled={s.running || s.done}>
-              ▶ HEURISTIC
+              ▶️ HEURISTIC
             </button>
             <button className="btn-sm-ctrl" onClick={() => void s.autoRun("random" as AutoPolicy)} disabled={s.running || s.done}>
               ⚄ RANDOM
@@ -256,7 +256,11 @@ export default function Page() {
       <div className="divider" />
 
       {/* GPU CLUSTER */}
-      <GPUClusterPanel />
+      <GPUClusterPanel 
+        sessionId={s.info?.session_id} 
+        mode={s.info?.environment_mode} 
+        gpuPool={s.observation?.gpu_pool}
+      />
 
       <div className="divider" />
 
@@ -293,7 +297,7 @@ export default function Page() {
         </div>
         <div className="footer-right">
           BUILD 2.4.1 // MARL-FRAMEWORK // MIT LICENSE<br />
-          © 2025 THE_BOYS. ALL RIGHTS RESERVED.
+          ©️ 2025 THE_BOYS. ALL RIGHTS RESERVED.
         </div>
       </footer>
     </>
