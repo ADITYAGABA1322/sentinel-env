@@ -21,8 +21,8 @@ license: mit
 | 🌐 **Live HF Space** | [https://xcodeaddy-sentinel-env.hf.space](https://xcodeaddy-sentinel-env.hf.space) |
 | 📂 **HF Space Repo** | [https://huggingface.co/spaces/XcodeAddy/sentinel-env](https://huggingface.co/spaces/XcodeAddy/sentinel-env) |
 | 🐙 **GitHub Repo** | [https://github.com/ADITYAGABA1322/sentinel-env](https://github.com/ADITYAGABA1322/sentinel-env) |
-| 📓 **Training Notebook (Colab)** | [training/colab_notebook.ipynb](training/colab_notebook.ipynb) |
-| 📝 **Mini-Blog on Hugging Face** | [https://huggingface.co/blog/XcodeAddy/sentinel-training-ai-to-trust-wisely](https://huggingface.co/blog/XcodeAddy/sentinel-training-ai-to-trust-wisely) |
+| 📓 **Training Notebook (Colab)** | [training/colab_notebook.ipynb](https://colab.research.google.com/github/ADITYAGABA1322/sentinel-env/blob/main/training/colab_notebook.ipynb) |
+| 📝 **Mini-Blog on Hugging Face** | [https://huggingface.co/blog/XcodeAddy/sentinel-training-ai-to-trust-wisely](https://github.com/ADITYAGABA1322/sentinel-env/blob/main/BLOG.md) |
 | 🖥️ **OpenEnv Base URL** | [https://xcodeaddy-sentinel-env.hf.space](https://xcodeaddy-sentinel-env.hf.space) |
 
 ---
