@@ -48,12 +48,28 @@ def train_command(args: argparse.Namespace) -> str:
                 f"--batch-size {args.batch_size}",
                 f"--learning-rate {args.learning_rate}",
                 f"--lora-rank {args.lora_rank}",
+                f"--num-generations {args.num_generations}",
                 f"--max-seq-length {args.max_seq_length}",
                 f"--output-dir {shlex.quote(args.output_dir)}",
             ]
         )
     )
     if args.mode == "train-full":
+        upload_code = (
+            "import os; "
+            "from huggingface_hub import HfApi; "
+            "token=os.environ.get('HF_TOKEN'); "
+            "api=HfApi(token=token); "
+            "model_repo=os.environ.get('SENTINEL_MODEL_REPO','XcodeAddy/sentinel-grpo-qwen05'); "
+            "artifact_repo=os.environ.get('SENTINEL_ARTIFACT_REPO','XcodeAddy/sentinel-env-artifacts'); "
+            "job_id=os.environ.get('JOB_ID','manual'); "
+            "api.create_repo(model_repo, repo_type='model', exist_ok=True); "
+            f"api.upload_folder(folder_path='{args.output_dir}', repo_id=model_repo, repo_type='model'); "
+            "api.create_repo(artifact_repo, repo_type='dataset', exist_ok=True); "
+            "api.upload_folder(folder_path='outputs', repo_id=artifact_repo, repo_type='dataset', path_in_repo=f'job-{job_id}/outputs'); "
+            "print('Uploaded model adapter to', model_repo); "
+            "print('Uploaded outputs to', artifact_repo, 'under', f'job-{job_id}/outputs')"
+        )
         lines.extend(
             [
                 "python -c \"from training.replay import record_trained_actions; "
@@ -67,21 +83,7 @@ def train_command(args: argparse.Namespace) -> str:
                 "cp outputs/eval_post.json outputs/evaluation_results.json",
                 "python -m training.plots --pre outputs/eval_pre.json "
                 "--post outputs/eval_post.json --out-dir outputs/charts",
-                "python - <<'PY'\n"
-                "import os\n"
-                "from huggingface_hub import HfApi\n"
-                "token = os.environ.get('HF_TOKEN')\n"
-                "api = HfApi(token=token)\n"
-                "model_repo = os.environ.get('SENTINEL_MODEL_REPO', 'XcodeAddy/sentinel-grpo-qwen05')\n"
-                "artifact_repo = os.environ.get('SENTINEL_ARTIFACT_REPO', 'XcodeAddy/sentinel-env-artifacts')\n"
-                "job_id = os.environ.get('JOB_ID', 'manual')\n"
-                "api.create_repo(model_repo, repo_type='model', exist_ok=True)\n"
-                f"api.upload_folder(folder_path='{args.output_dir}', repo_id=model_repo, repo_type='model')\n"
-                "api.create_repo(artifact_repo, repo_type='dataset', exist_ok=True)\n"
-                "api.upload_folder(folder_path='outputs', repo_id=artifact_repo, repo_type='dataset', path_in_repo=f'job-{job_id}/outputs')\n"
-                "print('Uploaded model adapter to', model_repo)\n"
-                "print('Uploaded outputs to', artifact_repo, 'under', f'job-{job_id}/outputs')\n"
-                "PY",
+                f"python -c {shlex.quote(upload_code)}",
             ]
         )
     return shell_join(lines)
@@ -105,6 +107,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--batch-size", type=int, default=2)
     parser.add_argument("--learning-rate", type=float, default=5e-6)
     parser.add_argument("--lora-rank", type=int, default=8)
+    parser.add_argument("--num-generations", type=int, default=2)
     parser.add_argument("--max-seq-length", type=int, default=1024)
     parser.add_argument("--output-dir", default="training/sentinel_qwen05_grpo")
     return parser.parse_args()
