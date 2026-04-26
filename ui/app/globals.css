@@ -412,3 +412,102 @@ body {
   .arch-flow { flex-wrap: wrap; justify-content: center; }
   .divider { margin: 0 20px; width: calc(100% - 40px); }
 }
+
+/* ── GPU CLUSTER ── */
+.cluster-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+.node-card {
+  padding: 24px;
+  border-color: rgba(0, 200, 255, 0.1);
+}
+.node-card.failed {
+  opacity: 0.5;
+  filter: grayscale(1);
+  border-color: #333;
+}
+.node-status-badge {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+}
+.node-footer-stats {
+  margin-top: 16px;
+  display: flex;
+  justify-content: space-between;
+  padding-top: 12px;
+  border-top: 1px solid rgba(0, 200, 255, 0.05);
+}
+.node-stat {
+  display: flex;
+  flex-direction: column;
+}
+.node-stat .label {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+}
+.node-stat .val {
+  font-family: var(--font-display);
+  font-size: 10px;
+  color: var(--white);
+}
+.cluster-footer {
+  margin-top: 32px;
+  padding: 20px;
+  background: rgba(0, 20, 50, 0.3);
+  border: 1px solid rgba(0, 200, 255, 0.08);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+.cluster-total-load {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 1;
+}
+.cluster-total-load .label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.load-meter-bg {
+  height: 6px;
+  flex: 1;
+  background: rgba(255,255,255,0.05);
+  max-width: 300px;
+  position: relative;
+}
+.load-meter-fill {
+  height: 100%;
+  box-shadow: 0 0 10px currentColor;
+}
+.cluster-total-load .val {
+  font-family: var(--font-display);
+  font-size: 14px;
+  color: var(--cyan);
+  min-width: 40px;
+}
+.cluster-telemetry {
+  display: flex;
+  gap: 24px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--muted);
+}
+.cluster-telemetry b {
+  color: var(--cyan);
+}

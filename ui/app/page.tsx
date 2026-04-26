@@ -9,6 +9,7 @@ import SimCanvas from "./components/SimCanvas";
 import ExecutionLog from "./components/ExecutionLog";
 import ArchitecturePipeline from "./components/ArchitecturePipeline";
 import MetricsGrid from "./components/MetricsGrid";
+import GPUClusterPanel from "./components/GPUClusterPanel";
 import type { TaskType, AutoPolicy } from "./lib/types";
 
 export default function Page() {
@@ -254,9 +255,14 @@ export default function Page() {
 
       <div className="divider" />
 
+      {/* GPU CLUSTER */}
+      <GPUClusterPanel />
+
+      <div className="divider" />
+
       {/* ARCHITECTURE */}
       <section className="section-block alt-bg" id="architecture">
-        <div className="section-label">03 // SYSTEM DESIGN</div>
+        <div className="section-label">04 // SYSTEM DESIGN</div>
         <h2 className="section-title">Execution Pipeline</h2>
         <p className="section-desc">
           Data flows unidirectionally through the trust-calibrated RL loop. Each
@@ -269,7 +275,7 @@ export default function Page() {
 
       {/* METRICS */}
       <section className="section-block" id="metrics">
-        <div className="section-label">04 // EVALUATION RESULTS</div>
+        <div className="section-label">05 // EVALUATION RESULTS</div>
         <h2 className="section-title">Experimental Benchmarks</h2>
         <p className="section-desc">
           Averaged across evaluation episodes. Adversarial injection ratio fixed at

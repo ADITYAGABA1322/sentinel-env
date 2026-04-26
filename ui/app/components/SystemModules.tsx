@@ -80,6 +80,25 @@ export default function SystemModules({ running, done, adversarialCount }: Props
           <div className="card-ver">PPO v3.2.0</div>
         </div>
       </div>
+
+      <div className="card" style={{ "--card-accent": "#00f5ff" } as React.CSSProperties}>
+        <div className="card-id">MOD-005 // GPU COMPUTE</div>
+        <div className="card-icon">
+          <svg viewBox="0 0 40 40" fill="none"><rect x="6" y="10" width="28" height="20" rx="2" stroke="#00F5FF" strokeWidth="1.5" opacity="0.8"/><line x1="12" y1="10" x2="12" y2="30" stroke="#00F5FF" strokeWidth="1" opacity="0.3"/><line x1="18" y1="10" x2="18" y2="30" stroke="#00F5FF" strokeWidth="1" opacity="0.3"/><line x1="24" y1="10" x2="24" y2="30" stroke="#00F5FF" strokeWidth="1" opacity="0.3"/><line x1="30" y1="10" x2="30" y2="30" stroke="#00F5FF" strokeWidth="1" opacity="0.3"/><path d="M10 16h20M10 24h20" stroke="#00F5FF" strokeWidth="1" opacity="0.4"/></svg>
+        </div>
+        <div className="card-title">H100 GPU Compute Fabric</div>
+        <div className="card-body">
+          Underlying hardware substrate orchestrating 1.2M CUDA cores. 
+          Dynamic load balancing across N nodes with real-time thermal management.
+        </div>
+        <div className="card-footer">
+          <div className="card-status" style={{ color: "var(--cyan)" }}>
+            <div className="status-dot" style={{ background: "var(--cyan)" }} />
+            4 NODES ONLINE
+          </div>
+          <div className="card-ver">H100-v2</div>
+        </div>
+      </div>
     </div>
   );
 }
