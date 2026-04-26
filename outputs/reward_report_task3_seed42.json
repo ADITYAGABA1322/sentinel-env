@@ -1,6 +1,6 @@
 {
-  "episode_id": "b2421ee8-92e4-4d4b-b53d-7b4cdd6c86ee",
-  "session_id": "0f5acbea-d300-4044-b8dc-e0699bedef81",
+  "episode_id": "7f3bd324-24c1-4ca3-a365-794120f3de9b",
+  "session_id": "9c27bdf1-9627-476c-ac9b-48e59d137638",
   "task_type": "task3",
   "score": 0.6759,
   "total_reward": 17.5723,
@@ -41,6 +41,13 @@
       "confidence": 0.88,
       "trust_before": 0.5,
       "trust_after": 0.706,
+      "trust_snapshot": {
+        "S0": 0.706,
+        "S1": 0.5,
+        "S2": 0.5,
+        "S3": 0.5,
+        "S4": 0.5
+      },
       "result_metadata": {
         "step_cost": 1,
         "triggered": false,
@@ -70,6 +77,13 @@
       "confidence": 0.88,
       "trust_before": 0.706,
       "trust_after": 0.795,
+      "trust_snapshot": {
+        "S0": 0.795,
+        "S1": 0.5,
+        "S2": 0.5,
+        "S3": 0.5,
+        "S4": 0.5
+      },
       "result_metadata": {
         "step_cost": 1,
         "triggered": false,
@@ -99,6 +113,13 @@
       "confidence": 0.88,
       "trust_before": 0.795,
       "trust_after": 0.847,
+      "trust_snapshot": {
+        "S0": 0.847,
+        "S1": 0.5,
+        "S2": 0.5,
+        "S3": 0.5,
+        "S4": 0.5
+      },
       "result_metadata": {
         "step_cost": 1,
         "triggered": false,
@@ -128,6 +149,13 @@
       "confidence": 0.88,
       "trust_before": 0.847,
       "trust_after": 0.878,
+      "trust_snapshot": {
+        "S0": 0.878,
+        "S1": 0.5,
+        "S2": 0.5,
+        "S3": 0.5,
+        "S4": 0.5
+      },
       "result_metadata": {
         "step_cost": 1,
         "triggered": false,
@@ -157,6 +185,13 @@
       "confidence": 0.88,
       "trust_before": 0.878,
       "trust_after": 0.9,
+      "trust_snapshot": {
+        "S0": 0.9,
+        "S1": 0.5,
+        "S2": 0.5,
+        "S3": 0.5,
+        "S4": 0.5
+      },
       "result_metadata": {
         "step_cost": 1,
         "triggered": false,
@@ -186,6 +221,13 @@
       "confidence": 0.88,
       "trust_before": 0.9,
       "trust_after": 0.913,
+      "trust_snapshot": {
+        "S0": 0.913,
+        "S1": 0.5,
+        "S2": 0.5,
+        "S3": 0.5,
+        "S4": 0.5
+      },
       "result_metadata": {
         "step_cost": 1,
         "triggered": false,
@@ -215,6 +257,13 @@
       "confidence": 0.88,
       "trust_before": 0.913,
       "trust_after": 0.786,
+      "trust_snapshot": {
+        "S0": 0.786,
+        "S1": 0.5,
+        "S2": 0.5,
+        "S3": 0.5,
+        "S4": 0.5
+      },
       "result_metadata": {
         "step_cost": 1,
         "triggered": false,
@@ -244,6 +293,13 @@
       "confidence": 0.88,
       "trust_before": 0.786,
       "trust_after": 0.812,
+      "trust_snapshot": {
+        "S0": 0.812,
+        "S1": 0.5,
+        "S2": 0.5,
+        "S3": 0.5,
+        "S4": 0.5
+      },
       "result_metadata": {
         "step_cost": 1,
         "triggered": false,
@@ -273,6 +329,13 @@
       "confidence": 0.88,
       "trust_before": 0.812,
       "trust_after": 0.834,
+      "trust_snapshot": {
+        "S0": 0.834,
+        "S1": 0.5,
+        "S2": 0.5,
+        "S3": 0.5,
+        "S4": 0.5
+      },
       "result_metadata": {
         "step_cost": 1,
         "triggered": false,
@@ -302,6 +365,13 @@
       "confidence": 0.88,
       "trust_before": 0.834,
       "trust_after": 0.852,
+      "trust_snapshot": {
+        "S0": 0.852,
+        "S1": 0.5,
+        "S2": 0.5,
+        "S3": 0.5,
+        "S4": 0.5
+      },
       "result_metadata": {
         "step_cost": 1,
         "triggered": false,
@@ -331,6 +401,13 @@
       "confidence": 0.88,
       "trust_before": 0.852,
       "trust_after": 0.865,
+      "trust_snapshot": {
+        "S0": 0.865,
+        "S1": 0.5,
+        "S2": 0.5,
+        "S3": 0.5,
+        "S4": 0.5
+      },
       "result_metadata": {
         "step_cost": 1,
         "triggered": false,
@@ -360,6 +437,13 @@
       "confidence": 0.88,
       "trust_before": 0.865,
       "trust_after": 0.878,
+      "trust_snapshot": {
+        "S0": 0.878,
+        "S1": 0.5,
+        "S2": 0.5,
+        "S3": 0.5,
+        "S4": 0.5
+      },
       "result_metadata": {
         "step_cost": 1,
         "triggered": false,
@@ -389,6 +473,13 @@
       "confidence": 0.88,
       "trust_before": 0.878,
       "trust_after": 0.888,
+      "trust_snapshot": {
+        "S0": 0.888,
+        "S1": 0.5,
+        "S2": 0.5,
+        "S3": 0.5,
+        "S4": 0.5
+      },
       "result_metadata": {
         "step_cost": 1,
         "triggered": false,
@@ -418,6 +509,13 @@
       "confidence": 0.88,
       "trust_before": 0.888,
       "trust_after": 0.897,
+      "trust_snapshot": {
+        "S0": 0.897,
+        "S1": 0.5,
+        "S2": 0.5,
+        "S3": 0.5,
+        "S4": 0.5
+      },
       "result_metadata": {
         "step_cost": 1,
         "triggered": false,
@@ -447,6 +545,13 @@
       "confidence": 0.92,
       "trust_before": 0.897,
       "trust_after": 0.825,
+      "trust_snapshot": {
+        "S0": 0.825,
+        "S1": 0.5,
+        "S2": 0.5,
+        "S3": 0.5,
+        "S4": 0.5
+      },
       "result_metadata": {
         "step_cost": 1,
         "triggered": true,
@@ -476,6 +581,13 @@
       "confidence": 0.92,
       "trust_before": 0.825,
       "trust_after": 0.763,
+      "trust_snapshot": {
+        "S0": 0.763,
+        "S1": 0.5,
+        "S2": 0.5,
+        "S3": 0.5,
+        "S4": 0.5
+      },
       "result_metadata": {
         "step_cost": 1,
         "triggered": true,
@@ -505,6 +617,13 @@
       "confidence": 0.92,
       "trust_before": 0.763,
       "trust_after": 0.708,
+      "trust_snapshot": {
+        "S0": 0.708,
+        "S1": 0.5,
+        "S2": 0.5,
+        "S3": 0.5,
+        "S4": 0.5
+      },
       "result_metadata": {
         "step_cost": 1,
         "triggered": true,
@@ -534,6 +653,13 @@
       "confidence": 0.92,
       "trust_before": 0.708,
       "trust_after": 0.659,
+      "trust_snapshot": {
+        "S0": 0.659,
+        "S1": 0.5,
+        "S2": 0.5,
+        "S3": 0.5,
+        "S4": 0.5
+      },
       "result_metadata": {
         "step_cost": 1,
         "triggered": true,
@@ -563,6 +689,13 @@
       "confidence": 0.92,
       "trust_before": 0.659,
       "trust_after": 0.619,
+      "trust_snapshot": {
+        "S0": 0.619,
+        "S1": 0.5,
+        "S2": 0.5,
+        "S3": 0.5,
+        "S4": 0.5
+      },
       "result_metadata": {
         "step_cost": 1,
         "triggered": true,
@@ -592,6 +725,13 @@
       "confidence": 0.92,
       "trust_before": 0.619,
       "trust_after": 0.583,
+      "trust_snapshot": {
+        "S0": 0.583,
+        "S1": 0.5,
+        "S2": 0.5,
+        "S3": 0.5,
+        "S4": 0.5
+      },
       "result_metadata": {
         "step_cost": 1,
         "triggered": true,
@@ -621,6 +761,13 @@
       "confidence": 0.92,
       "trust_before": 0.583,
       "trust_after": 0.551,
+      "trust_snapshot": {
+        "S0": 0.551,
+        "S1": 0.5,
+        "S2": 0.5,
+        "S3": 0.5,
+        "S4": 0.5
+      },
       "result_metadata": {
         "step_cost": 1,
         "triggered": true,
@@ -650,6 +797,13 @@
       "confidence": 0.92,
       "trust_before": 0.551,
       "trust_after": 0.52,
+      "trust_snapshot": {
+        "S0": 0.52,
+        "S1": 0.5,
+        "S2": 0.5,
+        "S3": 0.5,
+        "S4": 0.5
+      },
       "result_metadata": {
         "step_cost": 1,
         "triggered": true,
@@ -679,6 +833,13 @@
       "confidence": 0.92,
       "trust_before": 0.52,
       "trust_after": 0.492,
+      "trust_snapshot": {
+        "S0": 0.492,
+        "S1": 0.5,
+        "S2": 0.5,
+        "S3": 0.5,
+        "S4": 0.5
+      },
       "result_metadata": {
         "step_cost": 1,
         "triggered": true,
@@ -708,6 +869,13 @@
       "confidence": 0.95,
       "trust_before": 0.5,
       "trust_after": 0.207,
+      "trust_snapshot": {
+        "S0": 0.492,
+        "S1": 0.207,
+        "S2": 0.5,
+        "S3": 0.5,
+        "S4": 0.5
+      },
       "result_metadata": {
         "step_cost": 1
       }
@@ -734,6 +902,13 @@
       "confidence": 0.45,
       "trust_before": 0.5,
       "trust_after": 0.207,
+      "trust_snapshot": {
+        "S0": 0.492,
+        "S1": 0.207,
+        "S2": 0.207,
+        "S3": 0.5,
+        "S4": 0.5
+      },
       "result_metadata": {
         "step_cost": 1,
         "in_domain": false,
@@ -762,6 +937,13 @@
       "confidence": null,
       "trust_before": null,
       "trust_after": null,
+      "trust_snapshot": {
+        "S0": 0.492,
+        "S1": 0.207,
+        "S2": 0.207,
+        "S3": 0.5,
+        "S4": 0.5
+      },
       "result_metadata": {}
     }
   ],
