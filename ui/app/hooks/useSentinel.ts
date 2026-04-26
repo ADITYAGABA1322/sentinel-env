@@ -9,6 +9,7 @@ import type {
 
 /* ── helpers ──────────────────────────────────────────── */
 
+<<<<<<< HEAD
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
 
 function bestSpec(obs: Observation | null): string {
@@ -16,6 +17,18 @@ function bestSpec(obs: Observation | null): string {
   return [...obs.available_specialists].sort(
     (a, b) => (obs.trust_snapshot[b] ?? 0.5) - (obs.trust_snapshot[a] ?? 0.5),
   )[0];
+=======
+const API_BASE = typeof window !== "undefined" 
+  ? (process.env.NEXT_PUBLIC_API_URL || (window.location.port === "3000" || window.location.port === "3458" ? "http://127.0.0.1:7860" : ""))
+  : "";
+
+function bestSpec(obs: Observation | null): string {
+  if (!obs) return "S0";
+  const ids = obs.available_specialists || obs.available_workers || [];
+  return [...ids].sort(
+    (a, b) => (obs.trust_snapshot[b] ?? 0.5) - (obs.trust_snapshot[a] ?? 0.5),
+  )[0] || "S0";
+>>>>>>> a89a58750afb4cf3e8d49f13fe66d7c227911387
 }
 
 function heuristicMove(obs: Observation | null) {
@@ -29,9 +42,14 @@ function heuristicMove(obs: Observation | null) {
 
 function randomMove(obs: Observation | null) {
   if (!obs) return { action: "delegate" as ActionType, specialist: "S0", trust: 0.5 };
+<<<<<<< HEAD
   const sp = obs.available_specialists[
     Math.floor(Math.random() * obs.available_specialists.length)
   ] || "S0";
+=======
+  const ids = obs.available_specialists || obs.available_workers || [];
+  const sp = ids[Math.floor(Math.random() * ids.length)] || "S0";
+>>>>>>> a89a58750afb4cf3e8d49f13fe66d7c227911387
   return { action: "delegate" as ActionType, specialist: sp, trust: obs.trust_snapshot[sp] ?? 0.5 };
 }
 
@@ -122,7 +140,12 @@ export function useSentinel() {
   const trustDeltas = useMemo(() => {
     if (!observation) return {};
     const d: Record<string, number> = {};
+<<<<<<< HEAD
     for (const id of observation.available_specialists) {
+=======
+    const ids = observation.available_specialists || observation.available_workers || [];
+    for (const id of ids) {
+>>>>>>> a89a58750afb4cf3e8d49f13fe66d7c227911387
       d[id] = (observation.trust_snapshot[id] ?? 0.5) - (prevTrust[id] ?? 0.5);
     }
     return d;
@@ -150,10 +173,17 @@ export function useSentinel() {
       const s = nextSeed ?? seed;
       setRunning(true);
       abortRef.current = false;
+<<<<<<< HEAD
       const payload = { task_type: t, seed: s };
       setLastReq({ method: "POST", path: "/reset", body: payload });
       try {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reset`, {
+=======
+      const payload = { task_type: t, seed: s, mode: "cluster" };
+      setLastReq({ method: "POST", path: "/reset", body: payload });
+      try {
+        const res = await fetch(`${API_BASE}/reset`, {
+>>>>>>> a89a58750afb4cf3e8d49f13fe66d7c227911387
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
@@ -195,17 +225,31 @@ export function useSentinel() {
 
       setActiveSpec(specialist);
 
+<<<<<<< HEAD
       const payload = {
         session_id: sid,
         task_type: obs.task_type,
         action_type: action,
+=======
+      const isCluster = active?.info?.environment_mode === "cluster" || sessionId === "cluster";
+      const mappedAction = (isCluster && action === "delegate") ? "allocate" : action;
+
+      const payload = {
+        session_id: sid,
+        task_type: obs.task_type,
+        action_type: mappedAction,
+>>>>>>> a89a58750afb4cf3e8d49f13fe66d7c227911387
         specialist_id: specialist,
         subtask_response: action === "solve_independently" ? "SELF_SOLVED" : null,
         reasoning: `ui-${action}${specialist ? `-${specialist}` : ""}`,
       };
       setLastReq({ method: "POST", path: `/step?session_id=${sid}`, body: payload });
       try {
+<<<<<<< HEAD
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/step?session_id=${encodeURIComponent(sid)}`, {
+=======
+        const res = await fetch(`${API_BASE}/step?session_id=${encodeURIComponent(sid)}`, {
+>>>>>>> a89a58750afb4cf3e8d49f13fe66d7c227911387
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),

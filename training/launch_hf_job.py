@@ -6,12 +6,19 @@ import shlex
 import sys
 from textwrap import dedent
 
+<<<<<<< HEAD
 from huggingface_hub import get_token, run_job
 
 
 # Current Unsloth pulls torchao, which expects torch >= 2.11. Keep the Jobs
 # image aligned so GRPO imports fail fast only for real code issues.
 DEFAULT_IMAGE = "pytorch/pytorch:2.11.0-cuda12.8-cudnn9-devel"
+=======
+from huggingface_hub import run_job
+
+
+DEFAULT_IMAGE = "pytorch/pytorch:2.6.0-cuda12.4-cudnn9-devel"
+>>>>>>> a89a58750afb4cf3e8d49f13fe66d7c227911387
 DEFAULT_REPO = "https://github.com/ADITYAGABA1322/sentinel-env"
 DEFAULT_MODEL = "unsloth/Qwen2.5-0.5B-Instruct"
 
@@ -26,6 +33,7 @@ def bootstrap_repo(repo_url: str) -> list[str]:
         "command -v git || (apt-get update && apt-get install -y git)",
         f"git clone {shlex.quote(repo_url)} sentinel-env",
         "cd sentinel-env",
+<<<<<<< HEAD
         "python -m venv --system-site-packages .job-venv || (apt-get update && apt-get install -y python3-venv && python -m venv --system-site-packages .job-venv)",
         ". .job-venv/bin/activate",
         "python -m pip install --upgrade pip",
@@ -39,6 +47,11 @@ def bootstrap_repo(repo_url: str) -> list[str]:
             "from trl import GRPOConfig, GRPOTrainer; "
             "print('training imports ok')\""
         ),
+=======
+        "python -m pip install --upgrade pip",
+        "pip install -r requirements.txt",
+        "pip install -r requirements-train.txt",
+>>>>>>> a89a58750afb4cf3e8d49f13fe66d7c227911387
     ]
 
 
@@ -46,11 +59,16 @@ def gpu_test_command() -> str:
     return "python -c 'import torch; print(torch.cuda.get_device_name())'"
 
 
+<<<<<<< HEAD
 def train_command(args: argparse.Namespace, train: bool = True) -> str:
     lines = bootstrap_repo(args.repo_url)
     if not train:
         return shell_join(lines)
 
+=======
+def train_command(args: argparse.Namespace) -> str:
+    lines = bootstrap_repo(args.repo_url)
+>>>>>>> a89a58750afb4cf3e8d49f13fe66d7c227911387
     lines.append(
         " ".join(
             [
@@ -108,11 +126,15 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Launch SENTINEL training on Hugging Face Jobs without shell quoting pain."
     )
+<<<<<<< HEAD
     parser.add_argument(
         "--mode",
         choices=["gpu-test", "import-smoke", "train-smoke", "train-full"],
         default="gpu-test",
     )
+=======
+    parser.add_argument("--mode", choices=["gpu-test", "train-smoke", "train-full"], default="gpu-test")
+>>>>>>> a89a58750afb4cf3e8d49f13fe66d7c227911387
     parser.add_argument("--namespace", default=os.environ.get("HF_NAMESPACE", "XcodeAddy"))
     parser.add_argument("--flavor", default="a10g-small")
     parser.add_argument("--timeout", default="2h")
@@ -134,11 +156,16 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
+<<<<<<< HEAD
     token = os.environ.get("HF_TOKEN") or get_token()
+=======
+    token = os.environ.get("HF_TOKEN")
+>>>>>>> a89a58750afb4cf3e8d49f13fe66d7c227911387
     if not token:
         raise SystemExit(
             dedent(
                 """
+<<<<<<< HEAD
                 No Hugging Face token was found.
 
                 Either run:
@@ -147,16 +174,28 @@ def main() -> None:
 
                 Or log in once:
                   .venv/bin/hf auth login --add-to-git-credential
+=======
+                HF_TOKEN is not set.
+
+                Run:
+                  read -s HF_TOKEN
+                  export HF_TOKEN
+                Then paste your Hugging Face write token.
+>>>>>>> a89a58750afb4cf3e8d49f13fe66d7c227911387
                 """
             ).strip()
         )
 
+<<<<<<< HEAD
     if args.mode == "gpu-test":
         command = gpu_test_command()
     elif args.mode == "import-smoke":
         command = train_command(args, train=False)
     else:
         command = train_command(args)
+=======
+    command = gpu_test_command() if args.mode == "gpu-test" else train_command(args)
+>>>>>>> a89a58750afb4cf3e8d49f13fe66d7c227911387
     print("Launching HF Job:")
     print(f"  mode      = {args.mode}")
     print(f"  namespace = {args.namespace}")
