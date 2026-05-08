@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from sentinel_config import ADVERSARIAL_AWARENESS_STAKES
 
-
 class TrustLedger:
     """
     Bayesian reliability tracker for each specialist.
